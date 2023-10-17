@@ -6,6 +6,7 @@ import crypto from "crypto";
 import { sendPasswordResetEmail } from "./emailController.js";
 import { hashSync, genSaltSync } from "bcrypt";
 import bcrypt from "bcryptjs";
+import { where } from "sequelize";
 // @desc Auth account & get token
 // @routes POST /api/account/login
 // @access public
@@ -196,9 +197,59 @@ const validateResetTokenResetPassword = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc change Password
+// @routes POST /api/account/resetPassword
+// @access public
+
+const changePassword = asyncHandler(async (req, res) => {
+  const { username, currentPassword, newPassword } = req.body;
+
+  try {
+    //find username
+
+    const user = await db.Account.findOne({
+      attributes: ["AccountID", "username", "password"],
+      where: {
+        username: username,
+      },
+    });
+
+    console.log("user:", user);
+
+    if (!user.username) {
+      res.status(404).json({ message: "user not found" });
+    }
+
+    //compare the current password with the stored hash
+
+    const passwordMatch = await bcrypt.compare(currentPassword, user.password);
+
+    if (!passwordMatch) {
+      res.status(401).json({ message: "Incorrect password" });
+    }
+
+    const hashPassword = await bcrypt.hash(newPassword, 10);
+
+    //update the user's password in the database
+    await db.Account.update(
+      { password: hashPassword },
+      {
+        where: {
+          username: user.username,
+        },
+      }
+    );
+
+    res.status(200).json({ message: "Password change successfully" });
+  } catch (e) {
+    console.log(`Error by ${e}`);
+  }
+});
+
 export {
   loginAccount,
   logoutAccount,
   forgotPassoword,
   validateResetTokenResetPassword,
+  changePassword,
 };
