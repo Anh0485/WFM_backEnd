@@ -3,8 +3,9 @@ import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import connectDB from "./configs/connectDB.js";
 import connectDB_01 from "./configs/connectDB_01.js";
-import accountRoutes from "./routes/accountRoutes.js";
-import employeeRoutes from "./routes/employeeRoutes.js";
+import accountRoutes from "./routes/SuperAdmin/accountRoutes.js";
+import employeeRoutes from "./routes/SuperAdmin/employeeRoutes.js";
+import tenantRoutes from "./routes/SuperAdmin/tenantRoutes.js";
 dotenv.config();
 connectDB_01();
 
@@ -45,8 +46,10 @@ app.get("/", (req, res) => {
   res.send("API running");
 });
 
-app.use("/api/account", accountRoutes);
-app.use("/api/employee", employeeRoutes);
+//SUPER ADMIN
+app.use("/api/superadmin/account", accountRoutes);
+app.use("/api/superadmin/employee", employeeRoutes);
+app.use("/api/superadmin/tenant", tenantRoutes);
 
 const PORT = process.env.PORT || 5000;
 

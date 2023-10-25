@@ -19,6 +19,7 @@ const createTransporter = async () => {
   const accessToken = await new Promise((resolve, reject) => {
     oauth2Client.getAccessToken((err, token) => {
       if (err) {
+        console.log(err);
         reject("Failed to create access token :(");
       }
       resolve(token);
@@ -54,8 +55,8 @@ const sendPasswordResetEmail = async (email, resetToken, origin) => {
                      <p><a href="${resetUrl}">${resetUrl}</a></p>`;
   } else {
     message = `<p>Please use the below token to reset your password with the 
-    <code>/api/account/reset-password</code> 
-    api route:</p>
+    <code>http://localhost:4200/#/verify-page</code> 
+     api route :</p>
     <p><code>${resetToken}</code></p>`;
   }
 

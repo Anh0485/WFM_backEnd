@@ -8,6 +8,7 @@ module.exports = {
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER,
+        field: "TenantID",
       },
       TenantName: {
         type: Sequelize.STRING,
