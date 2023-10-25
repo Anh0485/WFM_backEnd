@@ -110,6 +110,11 @@ const getEmployeeProfile = asyncHandler(async (req, res) => {
       where: { UserID: id },
     });
 
+    res.status(200).json({
+      message: "get employee successfully",
+      employee,
+    });
+
     console.log(employee);
   } catch (e) {
     console.log(`Error by: ${e}`);
@@ -124,17 +129,32 @@ const updateInforEmployee = asyncHandler(async (req, res) => {
   try {
     const id = req.params.id;
     const employee = await db.User.findOne({
-      attributes: ["UserID"],
+      attributes: [
+        "UserID",
+        "FirstName",
+        "LastName",
+        "Birthday",
+        "Email",
+        "Address",
+      ],
       where: { UserID: id },
     });
+    console.log(employee);
     if (employee) {
-      employee.FirstName = req.body.FirstName || employee.FirstName;
-      employee.LastName = req.body.LastName || employee.LastName;
-      employee.Birthday = req.body.Birthday || employee.Birthday;
-      employee.Email = req.body.Email || employee.Email;
-      employee.Address = req.body.Address || employee.Address;
-
-      const updatedEmployee = await employee.save();
+      const updatedEmployee = await db.User.update(
+        {
+          FirstName: req.body.FirstName || employee.FirstName,
+          LastName: req.body.LastName || employee.LastName,
+          Birthday: req.body.Birthday || employee.Birthday,
+          Email: req.body.Email || employee.Email,
+          Address: req.body.Address || employee.Address,
+        },
+        {
+          where: {
+            UserID: employee.UserID,
+          },
+        }
+      );
       res.status(200).json({
         message: "Update success",
         updatedEmployee,
