@@ -167,4 +167,47 @@ const updateInforEmployee = asyncHandler(async (req, res) => {
   }
 });
 
-export { addEmployee, getEmployeeProfile, updateInforEmployee };
+//// @desc update information employee
+// @routes POST /api/superadmin/employee/updateEmployeeProfile
+// @access private
+
+const deleteEmployee = asyncHandler(async (req, res) => {
+  const EmployeeID = req.params.id;
+  console.log(EmployeeID);
+  try {
+    const employee = await db.Employee.findOne({
+      attributes: ["EmployeeID", "AccountID", "UserID"],
+      where: {
+        EmployeeID: EmployeeID,
+      },
+    });
+    console.log(employee);
+    if (!employee) {
+      res.status(200).json({ message: "Employee isn't exist" });
+    } else {
+      await db.Employee.destroy({
+        where: { EmployeeID },
+      });
+
+      await db.Account.destroy({
+        where: {
+          AccountID: employee.AccountID,
+        },
+      });
+
+      await db.User.destroy({
+        where: {
+          UserID: employee.UserID,
+        },
+      });
+
+      res.status(200).json({
+        message: "Delete employee successfully",
+      });
+    }
+  } catch (e) {
+    console.log(`Error by: ${e}`);
+  }
+});
+
+export { addEmployee, getEmployeeProfile, updateInforEmployee, deleteEmployee };
