@@ -9,7 +9,8 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Account.belongsTo(models.Role, {foreignKey:"RoleID"})
+      Account.belongsTo(models.Role, { foreignKey: "RoleID" });
+      Account.hasOne(models.Employee, { foreignKey: "AccountID" });
     }
   }
   Account.init(
@@ -27,5 +28,11 @@ module.exports = (sequelize, DataTypes) => {
       modelName: "Account",
     }
   );
+  Account.beforeCreate((account, options) => {
+    // Rename the 'id' property to 'Account'
+    account.dataValues.AccountID = account.dataValues.id;
+    delete account.dataValues.id;
+    return account;
+  });
   return Account;
 };

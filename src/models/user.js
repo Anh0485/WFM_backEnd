@@ -9,13 +9,16 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      User.hasOne(models.Employee, { foreignKey: "UserID" });
     }
   }
   User.init(
     {
       FirstName: DataTypes.STRING,
       LastName: DataTypes.STRING,
+      Birthday: DataTypes.DATEONLY,
       Email: DataTypes.STRING,
+      Address: DataTypes.STRING,
       PhoneNumber: DataTypes.STRING,
       createdBy: DataTypes.INTEGER,
       updatedBy: DataTypes.INTEGER,
@@ -25,5 +28,18 @@ module.exports = (sequelize, DataTypes) => {
       modelName: "User",
     }
   );
+  User.beforeCreate((user, options) => {
+    // Rename the 'id' property to 'UserID'
+    user.dataValues.UserID = user.dataValues.id;
+    delete user.dataValues.id;
+    return user;
+  });
+  // User.beforeFind((user, options) => {
+  //   // Rename the 'id' property to 'UserID'
+  //   user.dataValues.UserID = user.dataValues.id;
+  //   delete user.dataValues.id;
+  //   return user;
+  // });
+
   return User;
 };
