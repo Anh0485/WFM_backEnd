@@ -7,6 +7,7 @@ import {
   updateInforEmployee,
   deleteEmployee,
   searchEmployee,
+  getAllEmployee,
 } from "../../controller/SuperAdmin/employeeController";
 
 router.post("/addEmployee", addEmployee);
@@ -14,6 +15,7 @@ router
   .route("/:id")
   .get(getEmployeeProfileByID)
   .put(updateInforEmployee)
-  .delete(deleteEmployee);
-router.route("/").get(searchEmployee);
+  .delete(deleteEmployee)
+  .get(searchEmployee);
+router.route("/").get(getAllEmployee);
 export default router;

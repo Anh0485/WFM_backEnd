@@ -1,8 +1,8 @@
-import db from "../../src/models/index.js";
+import db, { sequelize } from "../../src/models/index.js";
 import asyncHandler from "../../middleware/asyncHandler.js";
 import { hashSync, genSaltSync } from "bcrypt";
 import bcrypt from "bcryptjs";
-import { Op } from "sequelize";
+import { Op, QueryTypes } from "sequelize";
 // @desc add information employees
 // @routes POST /api/employee/addEmployee
 // @access private
@@ -237,10 +237,29 @@ const searchEmployee = asyncHandler(async (req, res) => {
   }
 });
 
+//// @desc search employee
+// @routes POST /api/superadmin/employee
+// @access private
+
+const getAllEmployee = asyncHandler(async (req, res) => {
+  try {
+    const employee = await sequelize.query(
+      "SELECT employees.EmployeeID, users.FirstName, users.LastName, users.Email, users.Birthday, users.Address FROM employees JOIN users ON employees.UserID = users.UserID;",
+      {
+        type: QueryTypes.SELECT,
+      }
+    );
+    res.status(200).json(employee);
+  } catch (e) {
+    console.log(`Error by ${e}`);
+  }
+});
+
 export {
   addEmployee,
   getEmployeeProfileByID,
   updateInforEmployee,
   deleteEmployee,
   searchEmployee,
+  getAllEmployee,
 };
