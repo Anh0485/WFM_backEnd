@@ -2,6 +2,7 @@ import db from "../../src/models/index.js";
 import asyncHandler from "../../middleware/asyncHandler.js";
 import { hashSync, genSaltSync } from "bcrypt";
 import bcrypt from "bcryptjs";
+import { Op } from "sequelize";
 // @desc add information employees
 // @routes POST /api/employee/addEmployee
 // @access private
@@ -95,7 +96,7 @@ const addEmployee = asyncHandler(async (req, res) => {
 // @routes POST /api/superadmin/employee/profile
 // @access private
 
-const getEmployeeProfile = asyncHandler(async (req, res) => {
+const getEmployeeProfileByID = asyncHandler(async (req, res) => {
   try {
     const id = req.params.id;
     const employee = await db.User.findOne({
@@ -210,4 +211,36 @@ const deleteEmployee = asyncHandler(async (req, res) => {
   }
 });
 
-export { addEmployee, getEmployeeProfile, updateInforEmployee, deleteEmployee };
+//// @desc search employee
+// @routes POST /api/superadmin/employee?id
+// @access private
+
+const searchEmployee = asyncHandler(async (req, res) => {
+  try {
+    const { queryParam } = req.query;
+    const employee = await db.User.findAll({
+      attributes: ["UserID", "FirstName", "LastName", "Email"],
+      where: {
+        [Op.or]: [
+          { firstName: { [Op.like]: `%${queryParam}%` } },
+          { lastName: { [Op.like]: `%${queryParam}%` } },
+        ],
+      },
+    });
+    if (employee) {
+      res.status(200).json(employee);
+    } else {
+      res.json({ message: "Employee isn't on the system" });
+    }
+  } catch (e) {
+    console.log(`Error by ${e}`);
+  }
+});
+
+export {
+  addEmployee,
+  getEmployeeProfileByID,
+  updateInforEmployee,
+  deleteEmployee,
+  searchEmployee,
+};
