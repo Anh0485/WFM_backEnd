@@ -8,14 +8,15 @@ import {
   deleteEmployee,
   searchEmployee,
   getAllEmployee,
-} from "../../controller/SuperAdmin/employeeController";
+} from "../controller/employeeController";
 
 router.post("/addEmployee", addEmployee);
 router
   .route("/:id")
   .get(getEmployeeProfileByID)
   .put(updateInforEmployee)
-  .delete(deleteEmployee)
-  .get(searchEmployee);
+  .delete(deleteEmployee);
+
 router.route("/").get(getAllEmployee);
+// .get(getAllEmployee);
 export default router;

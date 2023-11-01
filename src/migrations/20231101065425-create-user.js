@@ -16,17 +16,14 @@ module.exports = {
       LastName: {
         type: Sequelize.STRING,
       },
-      Birthday: {
-        type: Sequelize.DATEONLY,
-      },
       Email: {
-        type: Sequelize.STRING,
-      },
-      Address: {
         type: Sequelize.STRING,
       },
       PhoneNumber: {
         type: Sequelize.STRING,
+      },
+      Birthday: {
+        type: Sequelize.DATEONLY,
       },
       createdBy: {
         type: Sequelize.INTEGER,
@@ -34,15 +31,19 @@ module.exports = {
       updatedBy: {
         type: Sequelize.INTEGER,
       },
+      Address: {
+        type: Sequelize.STRING,
+      },
+      Gender: {
+        type: Sequelize.BOOLEAN,
+      },
       createdAt: {
-        type: "TIMESTAMP",
-        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
         allowNull: false,
+        type: Sequelize.DATE,
       },
       updatedAt: {
-        type: "TIMESTAMP",
-        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
         allowNull: false,
+        type: Sequelize.DATE,
       },
     });
   },

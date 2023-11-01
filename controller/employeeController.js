@@ -1,5 +1,5 @@
-import db, { sequelize } from "../../src/models/index.js";
-import asyncHandler from "../../middleware/asyncHandler.js";
+import db, { sequelize } from "../src/models/index.js";
+import asyncHandler from "../middleware/asyncHandler.js";
 import { hashSync, genSaltSync } from "bcrypt";
 import bcrypt from "bcryptjs";
 import { Op, QueryTypes } from "sequelize";
@@ -15,6 +15,7 @@ const addEmployee = asyncHandler(async (req, res) => {
     Email,
     Address,
     PhoneNumber,
+    gender,
     username,
     password,
     RoleID,
@@ -36,6 +37,7 @@ const addEmployee = asyncHandler(async (req, res) => {
         Email: Email,
         Address: Address,
         PhoneNumber: PhoneNumber,
+        Gender: gender,
       });
 
       const userID = addInforUser.id;

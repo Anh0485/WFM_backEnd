@@ -16,12 +16,13 @@ module.exports = (sequelize, DataTypes) => {
     {
       FirstName: DataTypes.STRING,
       LastName: DataTypes.STRING,
-      Birthday: DataTypes.DATEONLY,
       Email: DataTypes.STRING,
-      Address: DataTypes.STRING,
       PhoneNumber: DataTypes.STRING,
+      Birthday: DataTypes.DATEONLY,
       createdBy: DataTypes.INTEGER,
       updatedBy: DataTypes.INTEGER,
+      Address: DataTypes.STRING,
+      Gender: DataTypes.BOOLEAN,
     },
     {
       sequelize,
@@ -34,12 +35,5 @@ module.exports = (sequelize, DataTypes) => {
     delete user.dataValues.id;
     return user;
   });
-  // User.beforeFind((user, options) => {
-  //   // Rename the 'id' property to 'UserID'
-  //   user.dataValues.UserID = user.dataValues.id;
-  //   delete user.dataValues.id;
-  //   return user;
-  // });
-
   return User;
 };

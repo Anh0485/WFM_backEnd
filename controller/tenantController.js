@@ -1,5 +1,5 @@
-import db from "../../src/models/index.js";
-import asyncHandler from "../../middleware/asyncHandler.js";
+import db from "../src/models/index.js";
+import asyncHandler from "../middleware/asyncHandler.js";
 
 // @desc created tenants
 // @routes POST api/superadmin/tenant/createTenant

@@ -1,7 +1,7 @@
 import { query } from "express";
-import asyncHandler from "../../middleware/asyncHandler.js";
-import generateToken from "../../utils/generateToken.js";
-import db from "../../src/models/index.js";
+import asyncHandler from "../middleware/asyncHandler.js";
+import generateToken from "../utils/generateToken.js";
+import db from "../src/models/index.js";
 import crypto from "crypto";
 import { sendPasswordResetEmail } from "./emailController.js";
 import { hashSync, genSaltSync } from "bcrypt";

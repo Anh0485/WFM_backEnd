@@ -7,7 +7,7 @@ import {
   validateResetTokenResetPassword,
   changePassword,
   addAccount,
-} from "../../controller/SuperAdmin/accountController.js";
+} from "../controller/accountController.js";
 
 router.post("/login", loginAccount);
 router.post("/logout", logoutAccount);
