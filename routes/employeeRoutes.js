@@ -9,14 +9,15 @@ import {
   searchEmployee,
   getAllEmployee,
 } from "../controller/employeeController";
+import { protect, superAdmin } from "../middleware/authMiddleware";
 
-router.post("/addEmployee", addEmployee);
+router.post("/addEmployee", protect, addEmployee);
 router
   .route("/:id")
   .get(getEmployeeProfileByID)
   .put(updateInforEmployee)
   .delete(deleteEmployee);
 
-router.route("/").get(getAllEmployee);
+router.route("/").get(protect, getAllEmployee);
 // .get(getAllEmployee);
 export default router;

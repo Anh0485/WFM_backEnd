@@ -35,7 +35,7 @@ const loginAccount = asyncHandler(async (req, res) => {
           AccountID: account.AccountID,
           username: account.username,
           RoleID: account.RoleID,
-          token: generateToken(account.AccountID),
+          token: generateToken(account.AccountID, account.RoleID),
           status: "true",
         });
       } else {

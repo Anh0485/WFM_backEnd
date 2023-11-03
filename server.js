@@ -1,11 +1,13 @@
 import express from "express";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
-import connectDB from "./configs/connectDB.js";
+import cookieParser from "cookie-parser";
+// import connectDB from "./configs/connectDB.js";
 import connectDB_01 from "./configs/connectDB_01.js";
 import accountRoutes from "./routes/accountRoutes.js";
 import employeeRoutes from "./routes/employeeRoutes.js";
 import tenantRoutes from "./routes/tenantRoutes.js";
+import shiftRoutes from "./routes/shiftRoutes.js";
 dotenv.config();
 connectDB_01();
 
@@ -17,10 +19,12 @@ app.use(express.json());
 // Parse URL-encoded form data with extended option
 app.use(express.urlencoded({ extended: true }));
 
+app.use(cookieParser());
+
 app.use(function (req, res, next) {
   // Website you wish to allow to connect
   // res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4000');
-  res.setHeader("Access-Control-Allow-Origin", "http://localhost:58143");
+  res.setHeader("Access-Control-Allow-Origin", "http://localhost:4200");
 
   // Request methods you wish to allow
   res.setHeader(
@@ -51,6 +55,8 @@ app.use("/api/account", accountRoutes);
 app.use("/api/employee", employeeRoutes);
 app.use("/api/tenant", tenantRoutes);
 
+//Admin
+app.use("/api/shift",shiftRoutes)
 const PORT = process.env.PORT || 5000;
 
 app.listen(

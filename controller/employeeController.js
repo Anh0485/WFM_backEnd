@@ -75,7 +75,7 @@ const addEmployee = asyncHandler(async (req, res) => {
           UserID: userID,
           AccountID: accountID,
         });
-
+        
         res
           .status(200)
           .json({ message: "create employee successfully", createdEmployee });
@@ -239,8 +239,8 @@ const searchEmployee = asyncHandler(async (req, res) => {
   }
 });
 
-//// @desc search employee
-// @routes POST /api/superadmin/employee
+//// @desc get all employee
+// @routes GET /api/superadmin/employee
 // @access private
 
 const getAllEmployee = asyncHandler(async (req, res) => {
