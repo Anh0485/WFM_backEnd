@@ -56,7 +56,7 @@ app.use("/api/employee", employeeRoutes);
 app.use("/api/tenant", tenantRoutes);
 
 //Admin
-app.use("/api/shift",shiftRoutes)
+app.use("/api/shift", shiftRoutes);
 const PORT = process.env.PORT || 5000;
 
 app.listen(
