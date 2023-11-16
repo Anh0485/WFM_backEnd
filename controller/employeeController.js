@@ -9,13 +9,13 @@ import { Op, QueryTypes } from "sequelize";
 
 const addEmployee = asyncHandler(async (req, res) => {
   const {
-    firstName,
-    lastName,
+    FirstName,
+    LastName,
     Birthday,
     Email,
     Address,
     PhoneNumber,
-    gender,
+    Gender,
     username,
     password,
     RoleID,
@@ -31,13 +31,13 @@ const addEmployee = asyncHandler(async (req, res) => {
 
     if (!user) {
       const addInforUser = await db.User.create({
-        FirstName: firstName,
-        LastName: lastName,
+        FirstName: FirstName,
+        LastName: LastName,
         Birthday: Birthday,
         Email: Email,
         Address: Address,
         PhoneNumber: PhoneNumber,
-        Gender: gender,
+        Gender: Gender,
       });
 
       const userID = addInforUser.id;
@@ -101,17 +101,24 @@ const addEmployee = asyncHandler(async (req, res) => {
 const getEmployeeProfileByID = asyncHandler(async (req, res) => {
   try {
     const id = req.params.id;
-    const employee = await db.User.findOne({
-      attributes: [
-        "FirstName",
-        "LastName",
-        "PhoneNumber",
-        "Email",
-        "Birthday",
-        "Address",
-      ],
-      where: { UserID: id },
-    });
+    const employee = await sequelize.query(
+      "SELECT employees.EmployeeID, users.FirstName, users.LastName, users.Email, users.Birthday, users.Address FROM employees JOIN users ON employees.UserID = users.UserID WHERE employees.EmployeeID = :id;",
+      {
+        replacements: { id },
+        type: QueryTypes.SELECT,
+      }
+    );
+    // const employee = await db.User.findOne({
+    //   attributes: [
+    //     "FirstName",
+    //     "LastName",
+    //     "PhoneNumber",
+    //     "Email",
+    //     "Birthday",
+    //     "Address",
+    //   ],
+    //   where: { UserID: id },
+    // });
 
     res.status(200).json({
       message: "get employee successfully",
@@ -131,36 +138,47 @@ const getEmployeeProfileByID = asyncHandler(async (req, res) => {
 const updateInforEmployee = asyncHandler(async (req, res) => {
   try {
     const id = req.params.id;
-    const employee = await db.User.findOne({
-      attributes: [
-        "UserID",
-        "FirstName",
-        "LastName",
-        "Birthday",
-        "Email",
-        "Address",
-      ],
-      where: { UserID: id },
-    });
+
+    const employee = await sequelize.query(
+      "SELECT employees.EmployeeID, users.FirstName, users.LastName, users.Email, users.Birthday, users.Address, users.Gender, users.PhoneNumber FROM employees JOIN users ON employees.UserID = users.UserID WHERE employees.EmployeeID = :id;",
+      {
+        replacements: { id },
+        type: QueryTypes.SELECT,
+      }
+    );
+    
     console.log(employee);
+    console.log(employee[0].LastName)
     if (employee) {
-      const updatedEmployee = await db.User.update(
-        {
-          FirstName: req.body.FirstName || employee.FirstName,
-          LastName: req.body.LastName || employee.LastName,
-          Birthday: req.body.Birthday || employee.Birthday,
-          Email: req.body.Email || employee.Email,
-          Address: req.body.Address || employee.Address,
-        },
-        {
-          where: {
-            UserID: employee.UserID,
-          },
+      let query = `UPDATE users AS u 
+      INNER JOIN employees AS e ON u.UserID = e.UserID 
+      SET 
+      u.FirstName = :FirstName,
+      u.LastName = :LastName,
+      u.Birthday = :Birthday,
+      u.Email = :Email,
+      u.Address = :Address,
+      u.PhoneNumber = :PhoneNumber
+      WHERE 
+        e.EmployeeID = :EmployeeID
+      `;
+
+      const result = await sequelize.query(query,{
+        replacements:{
+          FirstName: req.body.FirstName || employee[0].FirstName,
+          LastName: req.body.LastName || employee[0].LastName,
+          Birthday: req.body.Birthday || employee[0].Birthday,
+          Email: req.body.Birthday || employee[0].Birthday,
+          Address: req.body.Address || employee[0].Address,
+          PhoneNumber: req.body.PhoneNumber || employee[0].PhoneNumber,
+          Gender: req.body.Gender || employee[0].Gender,
+          EmployeeID : id
         }
-      );
+      })
+      
       res.status(200).json({
         message: "Update success",
-        updatedEmployee,
+        result,
       });
     } else {
       res.status(404).json({ message: "User's not found" });
@@ -246,7 +264,7 @@ const searchEmployee = asyncHandler(async (req, res) => {
 const getAllEmployee = asyncHandler(async (req, res) => {
   try {
     const employee = await sequelize.query(
-      "SELECT employees.EmployeeID, users.FirstName, users.LastName, users.Email, users.Birthday, users.Address FROM employees JOIN users ON employees.UserID = users.UserID;",
+      "SELECT employees.EmployeeID, users.FirstName, users.LastName, users.Email, users.Birthday, users.Address, users.PhoneNumber FROM employees JOIN users ON employees.UserID = users.UserID;",
       {
         type: QueryTypes.SELECT,
       }
