@@ -1,34 +1,32 @@
-"use strict";
+'use strict';
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("Accounts", {
-      AccountID: {
+    await queryInterface.createTable('WorkSchedules', {
+      ScheduleID: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER,
+        field: "ScheduleID",
       },
-      username: {
-        type: Sequelize.STRING,
+      EmployeeID: {
+        type: Sequelize.INTEGER
       },
-      password: {
-        type: Sequelize.STRING,
+      ShiftTypeID: {
+        type: Sequelize.INTEGER
       },
-      IsLoggedIn: {
-        type: Sequelize.BOOLEAN,
+      workdate: {
+        type: Sequelize.DATE
       },
-      PasswordResetToken: {
-        type: Sequelize.STRING,
+      isScheduled: {
+        type: Sequelize.BOOLEAN
       },
       createdBy: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.INTEGER
       },
       updatedBy: {
-        type: Sequelize.INTEGER,
-      },
-      RoleID: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.INTEGER
       },
       createdAt: {
         type: "TIMESTAMP",
@@ -39,10 +37,10 @@ module.exports = {
         type: "TIMESTAMP",
         defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
         allowNull: false,
-      },
+      }
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("Accounts");
-  },
+    await queryInterface.dropTable('WorkSchedules');
+  }
 };

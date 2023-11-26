@@ -1,11 +1,12 @@
 import { query } from "express";
 import asyncHandler from "../middleware/asyncHandler.js";
 import generateToken from "../utils/generateToken.js";
-import db from "../src/models/index.js";
+import db, { sequelize } from "../src/models/index.js";
 import crypto from "crypto";
 import { sendPasswordResetEmail } from "./emailController.js";
 import { hashSync, genSaltSync } from "bcrypt";
 import bcrypt from "bcryptjs";
+import { Op, QueryTypes } from "sequelize";
 
 // @desc Auth account & get token
 // @routes POST /api/account/login
@@ -28,14 +29,35 @@ const loginAccount = asyncHandler(async (req, res) => {
 
       const isPasswordMatch = await bcrypt.compare(password, passwordHash);
 
+
+
       console.log("isPasswordMatch:", isPasswordMatch);
 
       if (isPasswordMatch) {
+        // const permissionDetail = await db.PermissionDetail.findOne({
+        //   attributes:["ModuleID","CanView","CanEdit","CanDelete","CanExport"],
+        //   where:{
+        //     PermissionID: account.PermissionID
+        //   }
+        // })
+        const permissions = await sequelize.query(`SELECT permissions.PermissionID,modules.ModuleName, permissiondetails.CanView, permissiondetails.CanEdit, permissiondetails.CanDelete, permissiondetails.CanExport
+        FROM accounts
+        JOIN permissions ON accounts.AccountID = permissions.AccountID
+        JOIN permissiondetails ON permissiondetails.PermissionID = permissions.PermissionID
+        JOIN modules ON permissiondetails.ModuleID = modules.ModuleID
+        where accounts.AccountID = :id`,
+        {
+          replacements: {
+            id: account.AccountID
+          },
+          type: QueryTypes.SELECT
+        })
+        // const user = await db.
         res.json({
           AccountID: account.AccountID,
           username: account.username,
           RoleID: account.RoleID,
-          token: generateToken(account.AccountID, account.RoleID),
+          token: generateToken(account.AccountID, account.RoleID, permissions),
           status: "true",
         });
       } else {

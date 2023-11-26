@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import asyncHandler from "./asyncHandler";
-import db from "../src/models/index.js";
+import db, { sequelize } from "../src/models/index.js";
+import { Op, QueryTypes } from "sequelize";
 
 //protect routes
 export const protect = asyncHandler(async (req, res, next) => {
@@ -11,7 +12,7 @@ export const protect = asyncHandler(async (req, res, next) => {
   ) {
     try {
       token = req.headers.authorization.split(" ")[1];
-
+     
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       console.log("decoded", decoded);
 
@@ -21,13 +22,22 @@ export const protect = asyncHandler(async (req, res, next) => {
           AccountID: decoded.id,
         },
       });
+      
+      req.permission = await sequelize.query(`SELECT permissions.PermissionID,modules.ModuleName, permissiondetails.CanView, permissiondetails.CanEdit, permissiondetails.CanDelete, permissiondetails.CanExport
+      FROM accounts
+      JOIN permissions ON accounts.AccountID = permissions.AccountID
+      JOIN permissiondetails ON permissiondetails.PermissionID = permissions.PermissionID
+      JOIN modules ON permissiondetails.ModuleID = modules.ModuleID
+      where accounts.AccountID = :id`,
+      {
+        replacements: {
+          id: decoded.id
+        },
+        type: QueryTypes.SELECT
+      })
 
-      //   req.account.roleID = await db.Account.findOne({
-      //     attributes: ["RoleID"],
-      //     where: {
-      //       RoleID: decoded.roleID,
-      //     },
-      //   });
+
+      
       next();
     } catch (error) {
       console.error(error);
@@ -39,6 +49,8 @@ export const protect = asyncHandler(async (req, res, next) => {
     res.status(401).json({ message: "Not authorized, no token" });
   }
 });
+
+//
 
 export const superAdmin = asyncHandler(async (req, res, next) => {
   console.log("req.account", req.account, "req.account.id", req.account.RoleID);

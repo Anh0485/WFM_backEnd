@@ -6,14 +6,15 @@ import { QueryTypes } from "sequelize";
 // @access private
 
 const createdTenant = asyncHandler(async (req, res) => {
-  const { tenantName, subscriptionDetails } = req.body;
+  const { TenantName, SubscriptionDetails } = req.body;
   try {
     const creatTenant = await db.Tenants.create({
-      TenantName: tenantName,
-      SubscriptionDetails: subscriptionDetails,
+      TenantName: TenantName,
+      SubscriptionDetails: SubscriptionDetails,
     });
     res.status(200).json({
       status: "create tenant successfully",
+      creatTenant
     });
   } catch (error) {
     console.log(`Error by: ${error}`);
@@ -29,6 +30,7 @@ const getAllTenants = asyncHandler(async (req, res) => {
     const getTenants = await sequelize.query("SELECT * FROM tenants", {
       type: QueryTypes.SELECTS,
     });
+    
     res
       .status(200)
       .json({ message: "get all tenants successfully", getTenants });

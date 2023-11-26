@@ -1,5 +1,7 @@
-"use strict";
-const { Model } = require("sequelize");
+'use strict';
+const {
+  Model
+} = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Account extends Model {
     /**
@@ -11,28 +13,26 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       Account.belongsTo(models.Role, { foreignKey: "RoleID" });
       Account.hasOne(models.Employee, { foreignKey: "AccountID" });
+      Account.hasMany(models.Permission, { foreignKey: 'AccountID' });
     }
   }
-  Account.init(
-    {
-      username: DataTypes.STRING,
-      password: DataTypes.STRING,
-      IsLoggedIn: DataTypes.BOOLEAN,
-      PasswordResetToken: DataTypes.STRING,
-      createdBy: DataTypes.INTEGER,
-      updatedBy: DataTypes.INTEGER,
-      RoleID: DataTypes.INTEGER,
-    },
-    {
-      sequelize,
-      modelName: "Account",
-    }
-  );
+  Account.init({
+    username: DataTypes.STRING,
+    password: DataTypes.STRING,
+    IsLoggedIn: DataTypes.BOOLEAN,
+    RoleID: DataTypes.INTEGER,
+    createdBy: DataTypes.INTEGER,
+    updatedBy: DataTypes.INTEGER
+  }, {
+    sequelize,
+    modelName: 'Account',
+  });
   Account.beforeCreate((account, options) => {
     // Rename the 'id' property to 'Account'
     account.dataValues.AccountID = account.dataValues.id;
     delete account.dataValues.id;
     return account;
   });
+
   return Account;
 };
