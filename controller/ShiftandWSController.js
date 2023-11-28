@@ -148,4 +148,137 @@ const getShiftByID = asyncHandler(async (req, res) => {
   }
 });
 
-export { createdShift, updatedShift, deletedShift, getAllShift, getShiftByID };
+// @desc created work schedule
+// @routes POST api/workschedule/createdWS
+// @access private
+
+const createdWorkSchedule = asyncHandler(async (req, res) => {
+  try {
+    const { EmployeeID, ShiftTypeID, WorkDate, isScheduled } = req.body;
+
+    const checkScheduleByEmployeeID = await sequelize.query(
+      `SELECT Count(*) 
+      FROM workschedules 
+      WHERE workdate= :WorkDate
+      AND ShiftTypeID = :ShiftTypeID 
+      AND EmployeeID = :EmployeeID`,
+      {
+        replacements: {
+          WorkDate: WorkDate,
+          ShiftTypeID: ShiftTypeID,
+          EmployeeID: EmployeeID,
+        },
+        type: QueryTypes.SELECT,
+      }
+    );
+    console.log("checkScheduleByEmployeeID: ", checkScheduleByEmployeeID);
+
+    const count = checkScheduleByEmployeeID[0]["Count(*)"];
+    console.log(count);
+
+    if (count === 0) {
+      const createdworkSchedule = await db.WorkSchedule.create({
+        EmployeeID: EmployeeID,
+        ShiftTypeID: ShiftTypeID,
+        workdate: WorkDate,
+        isScheduled: isScheduled,
+      });
+      res.status(200).json({
+        message: "create schedule successfully",
+        createdworkSchedule,
+      });
+    } else {
+      res.json({
+        message: "schedule already exists.",
+      });
+    }
+  } catch (e) {
+    console.error(e);
+  }
+});
+
+// @desc updated WSchedule
+// @routes PUT api/shift/wschedule/:id
+// @access private/ superadmin
+
+const updateWSchedule = asyncHandler(async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const wschedule = await db.WorkSchedule.findOne({
+      attributes: ["ScheduleID", "ShiftTypeID", "workdate", "isScheduled"],
+      where: {
+        ScheduleID: id,
+      },
+    });
+
+    if (wschedule) {
+      const updatedWSchedule = await db.WorkSchedule.update(
+        {
+          ShiftTypeID: req.body.ShiftTypeID || wschedule.ShiftTypeID,
+          workdate: req.body.workdate || wschedule.workdate,
+          isScheduled: req.body.isScheduled || wschedule.isScheduled,
+        },
+        {
+          where: {
+            ScheduleID: wschedule.ScheduleID,
+          },
+        }
+      );
+      res.status(200).json({
+        message: "updated wschedule successfully",
+        updatedWSchedule,
+      });
+    } else {
+      res.status(404).json({ message: "Work Schedule's not found" });
+    }
+  } catch (e) {
+    console.error(e);
+  }
+});
+
+// @desc delete WSchedule
+// @routes DELETE api/shift/wschedule/:id
+// @access private/ superadmin
+
+const deleteWSchedule = asyncHandler(async(req,res)=>{
+  try{
+
+    const id = req.params.id;
+    const wschedule = await db.WorkSchedule.findOne({
+      attributes:['ScheduleID'],
+      where:{
+        ScheduleID: id
+      }
+    });
+
+    console.log(wschedule);
+
+    if(!wschedule){
+      res.status(200).json({
+        message:"WSchedule isn't exits"
+      })
+    }else{
+      await db.WorkSchedule.destroy({
+        where:{
+          ScheduleID: wschedule.ScheduleID
+        }
+      })
+    }
+    res.status(200).json({ message: "Delete wschedule successfully" });
+  }catch(e){
+    console.error(e)
+  }
+})
+
+
+export {
+  createdShift,
+  updatedShift,
+  deletedShift,
+  getAllShift,
+  getShiftByID,
+  createdWorkSchedule,
+  updateWSchedule,
+  deleteWSchedule
+};

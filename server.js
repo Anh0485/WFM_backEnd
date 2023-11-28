@@ -7,7 +7,7 @@ import connectDB_01 from "./configs/connectDB_01.js";
 import accountRoutes from "./routes/accountRoutes.js";
 import employeeRoutes from "./routes/employeeRoutes.js";
 import tenantRoutes from "./routes/tenantRoutes.js";
-import shiftRoutes from "./routes/shiftRoutes.js";
+import shiftRoutes from "./routes/ShiftandWSRoutes.js";
 dotenv.config();
 connectDB_01();
 

@@ -24,5 +24,11 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'WorkSchedule',
   });
+  WorkSchedule.beforeCreate((wschedule, options) => {
+    // Rename the 'id' property to 'UserID'
+    wschedule.dataValues.ScheduleID = wschedule.dataValues.id;
+    delete wschedule.dataValues.id;
+    return wschedule;
+  });
   return WorkSchedule;
 };
