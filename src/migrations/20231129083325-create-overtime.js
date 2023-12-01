@@ -2,31 +2,32 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('PermissionDetails', {
-      PermissionDetailID: {
+    await queryInterface.createTable('Overtimes', {
+      OverTimeID: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER,
-        field: "PermissionDetailID",
+        field: "OverTimeID",
       },
-      PermissionID: {
+      EmployeeID: {
         type: Sequelize.INTEGER
       },
-      ModuleID: {
+      OvertimeDate: {
+        type: Sequelize.DATE
+      },
+      OvertimeHour: {
+        type: Sequelize.TIME
+      },
+      Reason: {
+        type: Sequelize.STRING
+      },
+      ApprovedBy: {
         type: Sequelize.INTEGER
       },
-      CanView: {
-        type: Sequelize.BOOLEAN
-      },
-      CanEdit: {
-        type: Sequelize.BOOLEAN
-      },
-      CanDelete: {
-        type: Sequelize.BOOLEAN
-      },
-      CanExport: {
-        type: Sequelize.BOOLEAN
+      Status: {
+        type: Sequelize.ENUM,
+        values:['pending','approved']
       },
       createdBy: {
         type: Sequelize.INTEGER
@@ -47,6 +48,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('PermissionDetails');
+    await queryInterface.dropTable('Overtimes');
   }
 };

@@ -7,14 +7,19 @@ import { QueryTypes } from "sequelize";
 
 const createdTenant = asyncHandler(async (req, res) => {
   const { TenantName, SubscriptionDetails } = req.body;
+
+  const createdBy = req.createdBy;
   try {
+    
     const creatTenant = await db.Tenants.create({
       TenantName: TenantName,
       SubscriptionDetails: SubscriptionDetails,
+      createdBy: createdBy,
     });
+
     res.status(200).json({
       status: "create tenant successfully",
-      creatTenant
+      creatTenant,
     });
   } catch (error) {
     console.log(`Error by: ${error}`);
@@ -27,15 +32,23 @@ const createdTenant = asyncHandler(async (req, res) => {
 
 const getAllTenants = asyncHandler(async (req, res) => {
   try {
-    const getTenants = await sequelize.query("SELECT * FROM tenants", {
-      type: QueryTypes.SELECTS,
-    });
-    
+    const getTenants = await sequelize.query(
+      `SELECT t.TenantID, t.TenantName, t.SubscriptionDetails, t.createdAt,
+    CONCAT(u.FirstName, ' ', u.LastName) AS createdBy
+FROM tenants AS t
+JOIN accounts AS a ON t.createdBy = a.AccountID
+JOIN employees as e on e.AccountID = a.AccountID
+JOIN users AS u ON e.UserID = u.UserID`,
+      {
+        type: QueryTypes.SELECTS,
+      }
+    );
+
     res
       .status(200)
       .json({ message: "get all tenants successfully", getTenants });
   } catch (e) {
-    console.log(`Error by: ${e}`);
+    console.log(`Error by: ${e}`);  
   }
 });
 

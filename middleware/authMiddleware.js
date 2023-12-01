@@ -22,8 +22,10 @@ export const protect = asyncHandler(async (req, res, next) => {
           AccountID: decoded.id,
         },
       });
+
       
-      req.permission = await sequelize.query(`SELECT permissions.PermissionID,modules.ModuleName, permissiondetails.CanView, permissiondetails.CanEdit, permissiondetails.CanDelete, permissiondetails.CanExport
+    
+      req.permission = await sequelize.query(`SELECT permissions.PermissionID,modules.ModuleName, permissiondetails.CanAdd, permissiondetails.CanView, permissiondetails.CanEdit, permissiondetails.CanDelete, permissiondetails.CanExport
       FROM accounts
       JOIN permissions ON accounts.AccountID = permissions.AccountID
       JOIN permissiondetails ON permissiondetails.PermissionID = permissions.PermissionID
@@ -37,8 +39,78 @@ export const protect = asyncHandler(async (req, res, next) => {
       })
 
 
-      
-      next();
+      req.createdBy = decoded.id;
+
+      //check permission
+      const methodType = req.method;
+
+      switch(methodType){
+        case 'POST':
+          for (let i = 0; i < req.permission.length; i++){
+            const permission = req.permission[i];
+            if(permission.CanAdd == 1){
+              next();
+              break;
+            }else{
+              res.status(200).json({message:'You do not have access'});
+              return
+            }
+          }
+          break;
+        case 'GET':
+          for (let i = 0; i < req.permission.length; i++){
+            const permission = req.permission[i];
+            if(permission.CanView === 1){
+              next();
+              break;
+            }else{
+              res.status(200).json({message:'You do not have access'})
+              return;
+
+            }
+          }
+          break;
+        case 'PUT':
+          for (let i = 0; i < req.permission.length; i++){
+            const permission = req.permission[i];
+            if(permission.CanEdit === 1){
+              next();
+              break;
+            }else{
+              res.status(200).json({message:'You do not have access'})
+              return;
+            }
+          }
+          break;
+        case 'DELETE':
+          for (let i = 0; i < req.permission.length; i++){
+            const permission = req.permission[i];
+            if(permission.CanDelete === 1){
+              next();
+              break;
+            }else{
+              res.status(200).json({message:'You do not have access'})
+              return;
+            }
+          }
+          break;
+        default:
+          break;
+      }
+
+      // console.log('req.method:', req.method);
+      // console.log('req.permission', req.permission);
+
+      // for (let i = 0; i < req.permission.length; i++) {
+      //   const permission = req.permission[i];
+      //   console.log(`Permission ID: ${permission.PermissionID}`);
+      //   console.log(`Module Name: ${permission.ModuleName}`);
+      //   console.log(`Can View: ${permission.CanView}`);
+      //   console.log(`Can Edit: ${permission.CanEdit}`);
+      //   console.log(`Can Delete: ${permission.CanDelete}`);
+      //   console.log(`Can Export: ${permission.CanExport}`);
+      //   console.log('------------------');
+      // }
     } catch (error) {
       console.error(error);
       res.status(401);
@@ -50,10 +122,9 @@ export const protect = asyncHandler(async (req, res, next) => {
   }
 });
 
-//
 
 export const superAdmin = asyncHandler(async (req, res, next) => {
-  console.log("req.account", req.account, "req.account.id", req.account.RoleID);
+  // console.log('req.permission', req.permission)
   if (req.account && (req.account.RoleID === 1 )) {
     next();
   } else {

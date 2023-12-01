@@ -3,7 +3,7 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class PermissionDetail extends Model {
+  class Overtime extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -13,19 +13,18 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
   }
-  PermissionDetail.init({
-    PermissionID: DataTypes.INTEGER,
-    ModuleID: DataTypes.INTEGER,
-    CanAdd: DataTypes.BOOLEAN,
-    CanView: DataTypes.BOOLEAN,
-    CanEdit: DataTypes.BOOLEAN,
-    CanDelete: DataTypes.BOOLEAN,
-    CanExport: DataTypes.BOOLEAN,
+  Overtime.init({
+    EmployeeID: DataTypes.INTEGER,
+    OvertimeDate: DataTypes.DATE,
+    OvertimeHour: DataTypes.TIME,
+    Reason: DataTypes.STRING,
+    ApprovedBy: DataTypes.INTEGER,
+    Status: DataTypes.ENUM('pending','approved'),
     createdBy: DataTypes.INTEGER,
     updatedBy: DataTypes.INTEGER
   }, {
     sequelize,
-    modelName: 'PermissionDetail',
+    modelName: 'Overtime',
   });
-  return PermissionDetail;
+  return Overtime;
 };

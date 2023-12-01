@@ -8,10 +8,12 @@ import {
   deleteEmployee,
   searchEmployee,
   getAllEmployee,
+  getAllRole,
 } from "../controller/employeeController";
 import { protect, superAdmin } from "../middleware/authMiddleware";
 
 router.post("/addEmployee", protect, addEmployee);
+router.get("/allRole",protect, getAllRole)
 router
   .route("/:id")
   .get(getEmployeeProfileByID)
@@ -19,5 +21,7 @@ router
   .delete(deleteEmployee);
 
 router.route("/").get(protect, getAllEmployee);
+
+
 // .get(getAllEmployee);
 export default router;

@@ -275,6 +275,22 @@ const getAllEmployee = asyncHandler(async (req, res) => {
   }
 });
 
+//// @desc get all role
+// @routes GET /api/employee
+// @access private
+
+const getAllRole = asyncHandler(async(req,res)=>{
+  try{
+    const allRole = await sequelize.query("SELECT * FROM roles",{
+      type: QueryTypes.SELECT
+    })
+    res.status(200).json(allRole)
+  }catch(e){
+    console.error(e)
+  }
+})
+
+
 export {
   addEmployee,
   getEmployeeProfileByID,
@@ -282,4 +298,5 @@ export {
   deleteEmployee,
   searchEmployee,
   getAllEmployee,
+  getAllRole
 };

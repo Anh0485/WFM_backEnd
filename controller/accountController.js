@@ -22,6 +22,8 @@ const loginAccount = asyncHandler(async (req, res) => {
       raw: true,
     });
 
+    
+
     if (account && account.username == username) {
       const passwordHash = account.password;
 
@@ -40,7 +42,7 @@ const loginAccount = asyncHandler(async (req, res) => {
         //     PermissionID: account.PermissionID
         //   }
         // })
-        const permissions = await sequelize.query(`SELECT permissions.PermissionID,modules.ModuleName, permissiondetails.CanView, permissiondetails.CanEdit, permissiondetails.CanDelete, permissiondetails.CanExport
+        const permissions = await sequelize.query(`SELECT permissions.PermissionID,modules.ModuleName, permissiondetails.CanAdd, permissiondetails.CanView, permissiondetails.CanEdit, permissiondetails.CanDelete, permissiondetails.CanExport
         FROM accounts
         JOIN permissions ON accounts.AccountID = permissions.AccountID
         JOIN permissiondetails ON permissiondetails.PermissionID = permissions.PermissionID
@@ -52,7 +54,9 @@ const loginAccount = asyncHandler(async (req, res) => {
           },
           type: QueryTypes.SELECT
         })
-        // const user = await db.
+        
+        
+
         res.json({
           AccountID: account.AccountID,
           username: account.username,
@@ -90,7 +94,7 @@ const logoutAccount = asyncHandler(async (req, res) => {
 const forgotPassoword = asyncHandler(async (req, res, next) => {
   try {
     const email = req.body.email;
-
+    
     const origin = req.header("Origin");
 
     const user = await db.User.findOne({
