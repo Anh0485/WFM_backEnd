@@ -10,14 +10,16 @@ import { assuredworkloads } from "googleapis/build/src/apis/assuredworkloads/ind
 const createdShift = asyncHandler(async (req, res) => {
   try {
     const { ShiftTypeName, ShiftStart, ShiftEnd } = req.body;
+    const createdBy = req.createdBy;
 
     const createShift = await sequelize.query(
-      "INSERT INTO shifts (ShiftTypeName, ShiftStart, ShiftEnd) VALUES (:ShiftTypeName, :ShiftStart, :ShiftEnd)",
+      "INSERT INTO shifts (ShiftTypeName, ShiftStart, ShiftEnd, createdBy) VALUES (:ShiftTypeName, :ShiftStart, :ShiftEnd, :createdBy)",
       {
         replacements: {
           ShiftTypeName,
           ShiftStart,
           ShiftEnd,
+          createdBy,
         },
       }
     );
@@ -107,16 +109,29 @@ const deletedShift = asyncHandler(async (req, res) => {
 
 const getAllShift = asyncHandler(async (req, res) => {
   try {
-    const allShift = await db.Shift.findAll({
-      attributes: [
-        "ShiftTypeID",
-        "ShiftTypeName",
-        "ShiftStart",
-        "ShiftEnd",
-        "createdBy",
-        "updatedBy",
-      ],
-    });
+    // const allShift = await db.Shift.findAll({
+    //   attributes: [
+    //     "ShiftTypeID",
+    //     "ShiftTypeName",
+    //     "ShiftStart",
+    //     "ShiftEnd",
+    //     "createdBy",
+    //     "updatedBy",
+    //     "createdAt"
+    //   ],
+    // });
+
+    const allShift = await sequelize.query(
+      `SELECT s.ShiftTypeID, s.ShiftTypeName, s.ShiftStart, s.ShiftEnd, DATE_FORMAT(s.createdAt, '%d-%m-%Y') AS createdAt,
+    CONCAT(u.FirstName, ' ', u.LastName) AS createdBy
+FROM shifts AS s
+JOIN accounts AS a ON s.createdBy = a.AccountID
+JOIN employees as e on e.AccountID = a.AccountID
+JOIN users AS u ON e.UserID = u.UserID`,
+      {
+        type: QueryTypes.SELECT,
+      }
+    );
 
     res.status(200).json({ message: "get all shift successfully", allShift });
   } catch (e) {
@@ -155,6 +170,7 @@ const getShiftByID = asyncHandler(async (req, res) => {
 const createdWorkSchedule = asyncHandler(async (req, res) => {
   try {
     const { EmployeeID, ShiftTypeID, WorkDate, isScheduled } = req.body;
+    const createdBy = req.createdBy;
 
     const checkScheduleByEmployeeID = await sequelize.query(
       `SELECT Count(*) 
@@ -182,6 +198,7 @@ const createdWorkSchedule = asyncHandler(async (req, res) => {
         ShiftTypeID: ShiftTypeID,
         workdate: WorkDate,
         isScheduled: isScheduled,
+        createdBy: createdBy,
       });
       res.status(200).json({
         message: "create schedule successfully",
@@ -241,39 +258,65 @@ const updateWSchedule = asyncHandler(async (req, res) => {
 // @routes DELETE api/shift/wschedule/:id
 // @access private/ superadmin
 
-const deleteWSchedule = asyncHandler(async(req,res)=>{
-  try{
-
+const deleteWSchedule = asyncHandler(async (req, res) => {
+  try {
     const id = req.params.id;
     const wschedule = await db.WorkSchedule.findOne({
-      attributes:['ScheduleID'],
-      where:{
-        ScheduleID: id
-      }
-    });
+      attributes: ["ScheduleID"],
+      where: {
+        ScheduleID: id,
+      },
+    }); 
 
     console.log(wschedule);
 
-    if(!wschedule){
+    if (!wschedule) {
       res.status(200).json({
-        message:"WSchedule isn't exits"
-      })
-    }else{
+        message: "WSchedule isn't exits",
+      });
+    } else {
       await db.WorkSchedule.destroy({
-        where:{
-          ScheduleID: wschedule.ScheduleID
-        }
-      })
+        where: {
+          ScheduleID: wschedule.ScheduleID,
+        },
+      });
     }
     res.status(200).json({ message: "Delete wschedule successfully" });
-  }catch(e){
-    console.error(e)
+  } catch (e) {
+    console.error(e);
   }
-})
+});
 
+// @desc get all WSchedule
+// @routes GET api/shift/wschedule
+// @access private/ superadmin
 
+const getAllWSchedule = asyncHandler(async (req, res) => {
+  try {
+    const allWSchedule = await sequelize.query(
+      `SELECT w.ScheduleID, e.EmployeeID, CONCAT(u.FirstName, ' ', u.LastName) AS FullName, s.ShiftStart, s.ShiftEnd,
+      DATE_FORMAT(w.WorkDate, '%d-%m-%Y') AS WorkDate, w.isScheduled, CONCAT(u2.FirstName, ' ', u2.LastName) AS CreatedBy, DATE_FORMAT(w.createdAt, '%d-%m-%Y') AS createdAt
+      FROM workschedules AS w
+      JOIN employees AS e ON w.EmployeeID = e.EmployeeID
+      JOIN users AS u ON e.UserID = u.UserID
+      JOIN shifts AS s ON s.ShiftTypeID = w.ShiftTypeID
+      JOIN employees AS e2 ON w.createdBy = e2.AccountID
+      JOIN users AS u2 ON e2.UserID = u2.UserID`,
+      {
+        type: QueryTypes.SELECT,
+      }
+    );
 
+    
 
+    res.status(200).json({
+      message: "get all wschedule successfully",
+      allWSchedule,
+    });
+  } catch (e) {
+    console.log(e);
+  }
+});
 
 export {
   createdShift,
@@ -283,5 +326,6 @@ export {
   getShiftByID,
   createdWorkSchedule,
   updateWSchedule,
-  deleteWSchedule
+  deleteWSchedule,
+  getAllWSchedule,
 };

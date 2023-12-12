@@ -16,6 +16,18 @@ module.exports = {
       Description: {
         type: Sequelize.STRING
       },
+      path: {
+        type: Sequelize.STRING
+      },
+      title: {
+        type: Sequelize.STRING
+      },
+      icon: {
+        type: Sequelize.STRING
+      },
+      class: {
+        type: Sequelize.STRING
+      },
       createdBy: {
         type: Sequelize.INTEGER
       },

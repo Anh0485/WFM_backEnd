@@ -11,6 +11,8 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      PermissionDetail.belongsTo(models.Permission, {foreignKey:'PermissionID'})
+      PermissionDetail.belongsTo(models.Module, {foreignKey:'ModuleID'})
     }
   }
   PermissionDetail.init({

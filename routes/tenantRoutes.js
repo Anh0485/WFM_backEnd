@@ -10,8 +10,8 @@ import {
 import { protect, superAdmin, checkPermission } from "../middleware/authMiddleware.js";
 
 router.post("/createTenant", protect, createdTenant);
-router.get("/", protect, superAdmin, getAllTenants);
+router.get("/", protect, getAllTenants);
 router.route("/:id")
-.delete(protect, superAdmin, deleteTenants)
-.put(protect, superAdmin,updateTenant )
+.delete(protect, deleteTenants)
+.put(protect,updateTenant )
 export default router;

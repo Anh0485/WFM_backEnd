@@ -15,39 +15,24 @@ export const protect = asyncHandler(async (req, res, next) => {
      
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       console.log("decoded", decoded);
-
-      req.account = await db.Account.findOne({
-        attributes: ["AccountID", "RoleID"],
-        where: {
-          AccountID: decoded.id,
-        },
-      });
-
       
-    
-      req.permission = await sequelize.query(`SELECT permissions.PermissionID,modules.ModuleName, permissiondetails.CanAdd, permissiondetails.CanView, permissiondetails.CanEdit, permissiondetails.CanDelete, permissiondetails.CanExport
-      FROM accounts
-      JOIN permissions ON accounts.AccountID = permissions.AccountID
-      JOIN permissiondetails ON permissiondetails.PermissionID = permissions.PermissionID
-      JOIN modules ON permissiondetails.ModuleID = modules.ModuleID
-      where accounts.AccountID = :id`,
-      {
-        replacements: {
-          id: decoded.id
-        },
-        type: QueryTypes.SELECT
-      })
-
-
       req.createdBy = decoded.id;
 
-      //check permission
-      const methodType = req.method;
+      req.ModuleName = decoded.permission.map(item => item.ModuleName);
 
+      console.log('req.ModuleName', req.ModuleName)
+
+      console.log('req.ModuleTenat', decoded.permission[0].ModuleName)
+
+      console.log('decoded',decoded.permission[0].permission_sub)
+      
+
+      //check permission method
+      const methodType = req.method;
       switch(methodType){
         case 'POST':
-          for (let i = 0; i < req.permission.length; i++){
-            const permission = req.permission[i];
+          for (let i = 0; i < decoded.permission.length; i++){
+            const permission = decoded.permission[i].permission_sub;
             if(permission.CanAdd == 1){
               next();
               break;
@@ -58,8 +43,8 @@ export const protect = asyncHandler(async (req, res, next) => {
           }
           break;
         case 'GET':
-          for (let i = 0; i < req.permission.length; i++){
-            const permission = req.permission[i];
+          for (let i = 0; i < decoded.permission.length; i++){
+            const permission = decoded.permission[i].permission_sub;
             if(permission.CanView === 1){
               next();
               break;
@@ -71,8 +56,8 @@ export const protect = asyncHandler(async (req, res, next) => {
           }
           break;
         case 'PUT':
-          for (let i = 0; i < req.permission.length; i++){
-            const permission = req.permission[i];
+          for (let i = 0; i < decoded.permission.length; i++){
+            const permission = decoded.permission[i].permission_sub;
             if(permission.CanEdit === 1){
               next();
               break;
@@ -83,8 +68,8 @@ export const protect = asyncHandler(async (req, res, next) => {
           }
           break;
         case 'DELETE':
-          for (let i = 0; i < req.permission.length; i++){
-            const permission = req.permission[i];
+          for (let i = 0; i < decoded.permission.length; i++){
+            const permission = decoded.permission[i].permission_sub;
             if(permission.CanDelete === 1){
               next();
               break;
@@ -98,19 +83,6 @@ export const protect = asyncHandler(async (req, res, next) => {
           break;
       }
 
-      // console.log('req.method:', req.method);
-      // console.log('req.permission', req.permission);
-
-      // for (let i = 0; i < req.permission.length; i++) {
-      //   const permission = req.permission[i];
-      //   console.log(`Permission ID: ${permission.PermissionID}`);
-      //   console.log(`Module Name: ${permission.ModuleName}`);
-      //   console.log(`Can View: ${permission.CanView}`);
-      //   console.log(`Can Edit: ${permission.CanEdit}`);
-      //   console.log(`Can Delete: ${permission.CanDelete}`);
-      //   console.log(`Can Export: ${permission.CanExport}`);
-      //   console.log('------------------');
-      // }
     } catch (error) {
       console.error(error);
       res.status(401);

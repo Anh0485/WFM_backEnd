@@ -11,11 +11,16 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      Module.hasMany(models.PermissionDetail,{foreignKey:'ModuleID'})
     }
   }
   Module.init({
     ModuleName: DataTypes.STRING,
     Description: DataTypes.STRING,
+    path: DataTypes.STRING,
+    title: DataTypes.STRING,
+    icon: DataTypes.STRING,
+    class: DataTypes.STRING,
     createdBy: DataTypes.INTEGER,
     updatedBy: DataTypes.INTEGER
   }, {

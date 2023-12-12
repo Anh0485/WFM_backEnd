@@ -264,7 +264,7 @@ const searchEmployee = asyncHandler(async (req, res) => {
 const getAllEmployee = asyncHandler(async (req, res) => {
   try {
     const employee = await sequelize.query(
-      "SELECT employees.EmployeeID, users.FirstName, users.LastName, users.Email, users.Birthday, users.Address, users.PhoneNumber FROM employees JOIN users ON employees.UserID = users.UserID;",
+      "SELECT employees.EmployeeID,CONCAT(users.LastName, ' ', users.FirstName) AS FullName, users.FirstName, users.LastName, users.Email, users.Birthday, users.Address, users.PhoneNumber FROM employees JOIN users ON employees.UserID = users.UserID;",
       {
         type: QueryTypes.SELECT,
       }

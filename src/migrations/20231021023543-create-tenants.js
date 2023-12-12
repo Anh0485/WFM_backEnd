@@ -23,14 +23,16 @@ module.exports = {
         type: Sequelize.INTEGER,
       },
       createdAt: {
+        // type: Sequelize.DATE,
+        // allowNull: true,
         type: "TIMESTAMP",
         defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
-        allowNull: false,
+        allowNull: true,
       },
       updatedAt: {
         type: "TIMESTAMP",
         defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
-        allowNull: false,
+        allowNull: true,
       },
     });
   },

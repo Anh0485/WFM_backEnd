@@ -7,22 +7,24 @@ import {
   deleteWSchedule,
   deletedShift,
   getAllShift,
+  getAllWSchedule,
   getShiftByID,
   updateWSchedule,
   updatedShift,
 } from "../controller/ShiftandWSController";
 import { protect, superAdmin, admin } from "../middleware/authMiddleware";
 
-router.post("/createdShift", protect, admin, superAdmin, createdShift);
-router.post("/createdWSchedule", protect, admin, superAdmin, createdWorkSchedule);
+router.post("/createdShift", protect, createdShift);
+router.post("/createdWSchedule", protect, createdWorkSchedule);
 
-router.get("/", protect, admin, superAdmin, getAllShift);
+router.get("/", protect, getAllShift);
+router.get("/workschedule", protect, getAllWSchedule)
 router
   .route("/:id")
-  .put(protect, admin, superAdmin, updatedShift)
-  .delete(protect, admin, superAdmin, deletedShift)
-  .get(protect, admin, superAdmin, getShiftByID);
+  .put(protect, updatedShift)
+  .delete(protect,  deletedShift)
+  .get(protect, getShiftByID);
 router.route("/wschedule/:id")
-.put(protect, admin, superAdmin, updateWSchedule)
-.delete(protect,admin, superAdmin, deleteWSchedule)
+.put(protect, updateWSchedule)
+.delete(protect, deleteWSchedule)
 export default router;

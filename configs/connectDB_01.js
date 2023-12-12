@@ -5,6 +5,9 @@ const sequelize = new Sequelize("wfm_project_02", "root", "123", {
   host: process.env.MYSQL_HOST,
   dialect: "mysql",
   logging: false,
+  define: {
+    timestamps: false
+}
 });
 
 const connectDB_01 = async () => {

@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
     Permission.belongsTo(models.Account, { foreignKey: 'AccountID' });
-
+    Permission.hasMany(models.PermissionDetail, {foreignKey:'PermissionID'})
     }
   }
   Permission.init({

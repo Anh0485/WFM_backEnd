@@ -42,6 +42,8 @@ const loginAccount = asyncHandler(async (req, res) => {
         //     PermissionID: account.PermissionID
         //   }
         // })
+        
+
         const permissions = await sequelize.query(`SELECT permissions.PermissionID,modules.ModuleName, permissiondetails.CanAdd, permissiondetails.CanView, permissiondetails.CanEdit, permissiondetails.CanDelete, permissiondetails.CanExport
         FROM accounts
         JOIN permissions ON accounts.AccountID = permissions.AccountID
@@ -53,15 +55,34 @@ const loginAccount = asyncHandler(async (req, res) => {
             id: account.AccountID
           },
           type: QueryTypes.SELECT
-        })
-        
+        });
+
+        console.log('permission', permissions);
+
+    
+        const transformedPermissions = permissions.map(permission => {
+          return {
+            ModuleName: permission.ModuleName,
+            permission_sub: 
+              {
+                CanAdd: permission.CanAdd,
+                CanView: permission.CanView,
+                CanEdit: permission.CanEdit,
+                CanDelete: permission.CanDelete,
+                CanExport: permission.CanExport,
+              }
+            
+          };
+        });
+
+        console.log('transformedPermissions', transformedPermissions)
         
 
         res.json({
           AccountID: account.AccountID,
           username: account.username,
           RoleID: account.RoleID,
-          token: generateToken(account.AccountID, account.RoleID, permissions),
+          token: generateToken(account.AccountID, account.RoleID, transformedPermissions),
           status: "true",
         });
       } else {
@@ -333,6 +354,30 @@ const addAccount = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc get all role
+// @routes get /api/account/role
+// @access private
+
+const getAllRole  = asyncHandler(async(req,res)=>{
+  try{
+
+    const allRole = await sequelize.query(`SELECT * FROM roles`,
+    {
+      type: QueryTypes.SELECTS,
+    });
+
+    res.status(200).json({
+      message:"get all role success",
+      allRole
+    })
+
+
+  }catch(e){
+    console.error(e)
+  }
+})
+
+
 export {
   loginAccount,
   logoutAccount,
@@ -340,4 +385,5 @@ export {
   validateResetTokenResetPassword,
   changePassword,
   addAccount,
+  getAllRole,
 };
