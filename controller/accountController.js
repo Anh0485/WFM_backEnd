@@ -82,7 +82,9 @@ const loginAccount = asyncHandler(async (req, res) => {
           AccountID: account.AccountID,
           username: account.username,
           RoleID: account.RoleID,
-          token: generateToken(account.AccountID, account.RoleID, transformedPermissions),
+          token: generateToken(account.AccountID, 
+            account.RoleID, 
+            transformedPermissions),
           status: "true",
         });
       } else {

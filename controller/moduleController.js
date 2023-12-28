@@ -29,16 +29,19 @@ const getModuleName = asyncHandler(async (req, res) => {
   try {
     const ModuleName = req.ModuleName;
     const getModules = [];
+    const id = req.id;
     for (const moduleName of ModuleName) {
       const getModuleNames = await sequelize.query(
         `SELECT m.ModuleName,  m.path, m.icon, m.title, m.class, pd.CanAdd, pd.CanView, pd.CanEdit, pd.CanDelete, pd.CanExport
               FROM permissiondetails as pd 
               JOIN modules as m on m.ModuleID = pd.ModuleID
-              where m.ModuleName = :ModuleName`,
+              JOIN permissions as per on per.PermissionID = pd.PermissionID
+              where m.ModuleName = :ModuleName and per.AccountID = :id`,
         {
           type: QueryTypes.SELECT,
           replacements: {
             ModuleName: moduleName,
+            id: id
           },
         }
       );
@@ -52,7 +55,6 @@ const getModuleName = asyncHandler(async (req, res) => {
         title: item.title,
         icon: item.icon,
         class: item.class,
-
         // permission:{
         //     CanAdd: item.CanAdd,
         //     CanView: item.CanView,
@@ -71,4 +73,42 @@ const getModuleName = asyncHandler(async (req, res) => {
     console.error(e);
   }
 });
-export { getAllModule, getModuleName };
+
+// @desc get permission_sub of Module
+// @routes GET api/module/permission
+// @access private
+
+const getPermissionSub = asyncHandler(async(req,res)=>{
+  try{
+    const ModuleName = req.ModuleName;
+    const getPermissions = [];
+    const id = req.id;
+    for (const moduleName of ModuleName) {
+      const getPermission = await sequelize.query(
+        `SELECT m.ModuleName, pd.CanAdd, pd.CanView, pd.CanEdit, pd.CanDelete, pd.CanExport
+              FROM permissiondetails as pd 
+              JOIN modules as m on m.ModuleID = pd.ModuleID
+              JOIN permissions as per on per.PermissionID = pd.PermissionID
+              where m.ModuleName = :ModuleName and per.AccountID = :id`,
+        {
+          type: QueryTypes.SELECT,
+          replacements: {
+            ModuleName: moduleName,
+            id: id
+          },
+        }
+      );
+      getPermissions.push(...getPermission);
+    }
+    console.log("getPermission", getPermissions);
+
+    res.status(200).json({
+      message: "get all module by ModuleName",
+      modules: getPermissions,
+    });
+  }catch(e){
+    console.error(e)
+  }
+})
+
+export { getAllModule, getModuleName, getPermissionSub };

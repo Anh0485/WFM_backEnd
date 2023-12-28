@@ -18,6 +18,8 @@ export const protect = asyncHandler(async (req, res, next) => {
       
       req.createdBy = decoded.id;
 
+      req.id = decoded.id;
+
       req.ModuleName = decoded.permission.map(item => item.ModuleName);
 
       console.log('req.ModuleName', req.ModuleName)
