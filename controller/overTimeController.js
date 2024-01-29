@@ -8,14 +8,34 @@ import { QueryTypes } from "sequelize";
 
 const createdOT = asyncHandler(async (req, res) => {
   const createdBy = req.createdBy;
-  const { EmployeeID, OvertimeDate, OvertimeHour, Reason } = req.body;
+  const { OvertimeDate, OvertimeHour, Reason } = req.body;
+
+
   try {
+    const id = req.id;
+    const employeeID = await sequelize.query(
+      `SELECT e.EmployeeID
+    FROM employees as e
+    JOIN accounts as a on a.AccountID = e.AccountID
+    where a.AccountID = :id
+    `,
+      {
+        type: QueryTypes.SELECT,
+        replacements: {
+          id: id,
+        },
+      }
+    );
+    console.log('EmployeeID:', employeeID)
+
+    const EmployeeID = employeeID[0].EmployeeID
+  
     const createOT = await db.Overtime.create({
       EmployeeID: EmployeeID,
       OvertimeDate: OvertimeDate,
       OvertimeHour: OvertimeHour,
       Reason: Reason,
-      Status: 'pending',
+      Status: "pending",
       createdBy: createdBy,
     });
     if (createOT) {
@@ -33,29 +53,31 @@ const createdOT = asyncHandler(async (req, res) => {
   }
 });
 
-
 // @desc get all overtime
 // @routes GET api/overtime
 // @access private
 
-const getAllOT = asyncHandler(async(req,res)=>{
-  try{
-    const overtime = await sequelize.query(`select ot.OverTimeID, ot.EmployeeID, CONCAT(u.LastName, ' ', u.FirstName) as FullName, ot.OvertimeHour, ot.OvertimeDate, ot.Status
-    from overtimes as ot
-    join employees as e on e.EmployeeID = ot.EmployeeID
-    join users as u on e.UserID = u.UserID`,{
-      type: QueryTypes.SELECT,
-    })
+const getAllOT = asyncHandler(async (req, res) => {
+  try {
+    const overtime = await sequelize.query(
+      `select ot.OverTimeID, ot.EmployeeID, CONCAT(u.LastName, ' ', u.FirstName) as FullName, ot.OvertimeHour, date_format(ot.OvertimeDate,'%d-%m-%Y') as OvertimeDate , ot.Status
+      from overtimes as ot
+      join employees as e on e.EmployeeID = ot.EmployeeID
+      join users as u on e.UserID = u.UserID`,
+      {
+        type: QueryTypes.SELECT,
+      }
+    );
 
     res.status(200).json({
-      message:'get all ot successsfully',
-      overtime
-    })
-
-  }catch(e){
-    console.error(e)
+      message: "get all ot successsfully",
+      overtime,
+    });
+  } catch (e) {
+    console.error(e);
   }
-})
+});
+
 
 
 export { createdOT, getAllOT };

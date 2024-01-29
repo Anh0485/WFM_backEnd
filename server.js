@@ -11,6 +11,7 @@ import shiftRoutes from "./routes/ShiftandWSRoutes.js";
 import overTimeRoutes from "./routes/overTimeRoutes.js"
 import moduleRoutes from "./routes/moduleRoutes.js";
 import callRoutes from "./routes/callRoutes.js";
+import teamRoutes from "./routes/teamRoutes.js"
 import userRoutes from "./routes/userRoutes.js"
 dotenv.config();
 connectDB_01();
@@ -61,6 +62,7 @@ app.use("/api/tenant", tenantRoutes);
 app.use("/api/overtime", overTimeRoutes);
 app.use("/api/module", moduleRoutes);
 app.use("/api/callandagent", callRoutes);
+app.use("/api/team", teamRoutes);
 app.use("/api/user",userRoutes)
 
 //Admin

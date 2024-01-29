@@ -6,7 +6,6 @@ import { Op, QueryTypes } from "sequelize";
 // @desc add information employees
 // @routes POST /api/employee/addEmployee
 // @access private
-
 const addEmployee = asyncHandler(async (req, res) => {
   const {
     FirstName,
@@ -78,7 +77,7 @@ const addEmployee = asyncHandler(async (req, res) => {
         
         res
           .status(200)
-          .json({ message: "create employee successfully", createdEmployee });
+          .json({ message: "create employee successfully", createdEmployee, addInforUser });
       } else {
         res.json({ message: "username exits in system" });
       }

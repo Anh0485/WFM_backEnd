@@ -21,7 +21,7 @@ router
   .delete(deleteEmployee);
 
 router.route("/").get(protect, getAllEmployee);
-
+  
 
 // .get(getAllEmployee);
 export default router;

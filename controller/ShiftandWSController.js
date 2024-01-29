@@ -221,7 +221,7 @@ const createdWorkSchedule = asyncHandler(async (req, res) => {
 const updateWSchedule = asyncHandler(async (req, res) => {
   try {
     const id = req.params.id;
-
+    console.log('id', req.params.id)
     const wschedule = await db.WorkSchedule.findOne({
       attributes: ["ScheduleID", "ShiftTypeID", "workdate", "isScheduled"],
       where: {
@@ -230,10 +230,13 @@ const updateWSchedule = asyncHandler(async (req, res) => {
     });
 
     if (wschedule) {
+      console.log('workdate', req.body.WorkDate);
+      console.log('workdate', req.body.ShiftTypeID);
+
       const updatedWSchedule = await db.WorkSchedule.update(
         {
           ShiftTypeID: req.body.ShiftTypeID || wschedule.ShiftTypeID,
-          workdate: req.body.workdate || wschedule.workdate,
+          workdate: req.body.WorkDate || wschedule.workdate,
           isScheduled: req.body.isScheduled || wschedule.isScheduled,
         },
         {
@@ -294,14 +297,15 @@ const deleteWSchedule = asyncHandler(async (req, res) => {
 const getAllWSchedule = asyncHandler(async (req, res) => {
   try {
     const allWSchedule = await sequelize.query(
-      `SELECT w.ScheduleID, e.EmployeeID, CONCAT(u.FirstName, ' ', u.LastName) AS FullName, s.ShiftStart, s.ShiftEnd,
-      DATE_FORMAT(w.WorkDate, '%d-%m-%Y') AS WorkDate, w.isScheduled, CONCAT(u2.FirstName, ' ', u2.LastName) AS CreatedBy, DATE_FORMAT(w.createdAt, '%d-%m-%Y') AS createdAt
-      FROM workschedules AS w
-      JOIN employees AS e ON w.EmployeeID = e.EmployeeID
-      JOIN users AS u ON e.UserID = u.UserID
-      JOIN shifts AS s ON s.ShiftTypeID = w.ShiftTypeID
-      JOIN employees AS e2 ON w.createdBy = e2.AccountID
-      JOIN users AS u2 ON e2.UserID = u2.UserID`,
+      `SELECT w.ScheduleID, e.EmployeeID, CONCAT(u.FirstName, ' ', u.LastName) AS FullName,s.ShiftTypeID ,s.ShiftStart, s.ShiftEnd,
+      w.WorkDate,w.isScheduled, CONCAT(u2.FirstName, ' ', u2.LastName) AS CreatedBy, 
+          DATE_FORMAT(w.createdAt, '%d-%m-%Y') AS createdAt
+          FROM workschedules AS w
+          JOIN employees AS e ON w.EmployeeID = e.EmployeeID
+          JOIN users AS u ON e.UserID = u.UserID
+          JOIN shifts AS s ON s.ShiftTypeID = w.ShiftTypeID
+          JOIN employees AS e2 ON w.createdBy = e2.AccountID
+          JOIN users AS u2 ON e2.UserID = u2.UserID`,
       {
         type: QueryTypes.SELECT,
       }

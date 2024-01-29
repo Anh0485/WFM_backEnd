@@ -12,6 +12,7 @@ export const protect = asyncHandler(async (req, res, next) => {
   ) {
     try {
       token = req.headers.authorization.split(" ")[1];
+      console.log('token', token)
      
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       console.log("decoded", decoded);
@@ -30,60 +31,61 @@ export const protect = asyncHandler(async (req, res, next) => {
       
 
       //check permission method
-      const methodType = req.method;
-      switch(methodType){
-        case 'POST':
-          for (let i = 0; i < decoded.permission.length; i++){
-            const permission = decoded.permission[i].permission_sub;
-            if(permission.CanAdd == 1){
-              next();
-              break;
-            }else{
-              res.status(200).json({message:'You do not have access'});
-              return
-            }
-          }
-          break;
-        case 'GET':
-          for (let i = 0; i < decoded.permission.length; i++){
-            const permission = decoded.permission[i].permission_sub;
-            if(permission.CanView === 1){
-              next();
-              break;
-            }else{
-              res.status(200).json({message:'You do not have access'})
-              return;
+      // const methodType = req.method;
+      // switch(methodType){
+      //   case 'POST':
+      //     for (let i = 0; i < decoded.permission.length; i++){
+      //       const permission = decoded.permission[i].permission_sub;
+      //       if(permission.CanAdd == 1){
+      //         next();
+      //         break;
+      //       }else{
+      //         res.status(200).json({message:'You do not have access'});
+      //         return
+      //       }
+      //     }
+      //     break;
+      //   case 'GET':
+      //     for (let i = 0; i < decoded.permission.length; i++){
+      //       const permission = decoded.permission[i].permission_sub;
+      //       if(permission.CanView === 1){
+      //         next();
+      //         break;
+      //       }else{
+      //         res.status(200).json({message:'You do not have access'})
+      //         return;
 
-            }
-          }
-          break;
-        case 'PUT':
-          for (let i = 0; i < decoded.permission.length; i++){
-            const permission = decoded.permission[i].permission_sub;
-            if(permission.CanEdit === 1){
-              next();
-              break;
-            }else{
-              res.status(200).json({message:'You do not have access'})
-              return;
-            }
-          }
-          break;
-        case 'DELETE':
-          for (let i = 0; i < decoded.permission.length; i++){
-            const permission = decoded.permission[i].permission_sub;
-            if(permission.CanDelete === 1){
-              next();
-              break;
-            }else{
-              res.status(200).json({message:'You do not have access'})
-              return;
-            }
-          }
-          break;
-        default:
-          break;
-      }
+      //       }
+      //     }
+      //     break;
+      //   case 'PUT':
+      //     for (let i = 0; i < decoded.permission.length; i++){
+      //       const permission = decoded.permission[i].permission_sub;
+      //       if(permission.CanEdit === 1){
+      //         next();
+      //         break;
+      //       }else{
+      //         res.status(200).json({message:'You do not have access'})
+      //         return;
+      //       }
+      //     }
+      //     break;
+      //   case 'DELETE':
+      //     for (let i = 0; i < decoded.permission.length; i++){
+      //       const permission = decoded.permission[i].permission_sub;
+      //       if(permission.CanDelete === 1){
+      //         next();
+      //         break;
+      //       }else{
+      //         res.status(200).json({message:'You do not have access'})
+      //         return;
+      //       }
+      //     }
+      //     break;
+      //   default:
+      //     break;
+      // }
+      next();
 
     } catch (error) {
       console.error(error);
