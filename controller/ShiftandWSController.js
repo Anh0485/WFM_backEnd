@@ -169,7 +169,7 @@ const getShiftByID = asyncHandler(async (req, res) => {
 
 const createdWorkSchedule = asyncHandler(async (req, res) => {
   try {
-    const { EmployeeID, ShiftTypeID, WorkDate, isScheduled } = req.body;
+    const { EmployeeID, ShiftTypeID, WorkDate, isScheduled, ChannelID } = req.body;
     const createdBy = req.createdBy;
 
     const checkScheduleByEmployeeID = await sequelize.query(
@@ -199,6 +199,7 @@ const createdWorkSchedule = asyncHandler(async (req, res) => {
         workdate: WorkDate,
         isScheduled: isScheduled,
         createdBy: createdBy,
+        ChannelID: ChannelID
       });
       res.status(200).json({
         message: "create schedule successfully",
@@ -223,7 +224,7 @@ const updateWSchedule = asyncHandler(async (req, res) => {
     const id = req.params.id;
     console.log('id', req.params.id)
     const wschedule = await db.WorkSchedule.findOne({
-      attributes: ["ScheduleID", "ShiftTypeID", "workdate", "isScheduled"],
+      attributes: ["ScheduleID", "ShiftTypeID", "workdate", "isScheduled","ChannelID"],
       where: {
         ScheduleID: id,
       },
@@ -238,6 +239,7 @@ const updateWSchedule = asyncHandler(async (req, res) => {
           ShiftTypeID: req.body.ShiftTypeID || wschedule.ShiftTypeID,
           workdate: req.body.WorkDate || wschedule.workdate,
           isScheduled: req.body.isScheduled || wschedule.isScheduled,
+          ChannelID : req.body.ChannelID || wschedule.ChannelID
         },
         {
           where: {
@@ -298,20 +300,20 @@ const getAllWSchedule = asyncHandler(async (req, res) => {
   try {
     const allWSchedule = await sequelize.query(
       `SELECT w.ScheduleID, e.EmployeeID, CONCAT(u.FirstName, ' ', u.LastName) AS FullName,s.ShiftTypeID ,s.ShiftStart, s.ShiftEnd,
-      w.WorkDate,w.isScheduled, CONCAT(u2.FirstName, ' ', u2.LastName) AS CreatedBy, 
+      date_format(w.workdate, '%m-%d-%Y') as workdate, w.isScheduled,c.ChannelName, CONCAT(u2.FirstName, ' ', u2.LastName) AS CreatedBy, 
           DATE_FORMAT(w.createdAt, '%d-%m-%Y') AS createdAt
           FROM workschedules AS w
           JOIN employees AS e ON w.EmployeeID = e.EmployeeID
           JOIN users AS u ON e.UserID = u.UserID
           JOIN shifts AS s ON s.ShiftTypeID = w.ShiftTypeID
           JOIN employees AS e2 ON w.createdBy = e2.AccountID
-          JOIN users AS u2 ON e2.UserID = u2.UserID`,
+          JOIN users AS u2 ON e2.UserID = u2.UserID
+          jOIN channels AS c on w.ChannelID = c.ChannelID`,
       {
         type: QueryTypes.SELECT,
       }
     );
 
-    
 
     res.status(200).json({
       message: "get all wschedule successfully",

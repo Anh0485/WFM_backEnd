@@ -70,7 +70,7 @@ const addEmployee = asyncHandler(async (req, res) => {
           EmployeeID: userID,
           TenantID: TenantID,
           RoleID: roleID,
-          Status: Status,
+          Status: 'Active',
           UserID: userID,
           AccountID: accountID,
         });
@@ -146,8 +146,6 @@ const updateInforEmployee = asyncHandler(async (req, res) => {
       }
     );
     
-    console.log(employee);
-    console.log(employee[0].LastName)
     if (employee) {
       let query = `UPDATE users AS u 
       INNER JOIN employees AS e ON u.UserID = e.UserID 
@@ -157,7 +155,8 @@ const updateInforEmployee = asyncHandler(async (req, res) => {
       u.Birthday = :Birthday,
       u.Email = :Email,
       u.Address = :Address,
-      u.PhoneNumber = :PhoneNumber
+      u.PhoneNumber = :PhoneNumber,
+      u.Gender = :Gender
       WHERE 
         e.EmployeeID = :EmployeeID
       `;
@@ -167,7 +166,7 @@ const updateInforEmployee = asyncHandler(async (req, res) => {
           FirstName: req.body.FirstName || employee[0].FirstName,
           LastName: req.body.LastName || employee[0].LastName,
           Birthday: req.body.Birthday || employee[0].Birthday,
-          Email: req.body.Birthday || employee[0].Birthday,
+          Email: req.body.Email || employee[0].Email,
           Address: req.body.Address || employee[0].Address,
           PhoneNumber: req.body.PhoneNumber || employee[0].PhoneNumber,
           Gender: req.body.Gender || employee[0].Gender,
@@ -263,7 +262,7 @@ const searchEmployee = asyncHandler(async (req, res) => {
 const getAllEmployee = asyncHandler(async (req, res) => {
   try {
     const employee = await sequelize.query(
-      "SELECT employees.EmployeeID,CONCAT(users.LastName, ' ', users.FirstName) AS FullName, users.FirstName, users.LastName, users.Email, users.Birthday, users.Address, users.PhoneNumber FROM employees JOIN users ON employees.UserID = users.UserID;",
+      "SELECT e.EmployeeID,CONCAT(users.LastName, ' ', users.FirstName) AS FullName, users.FirstName, users.LastName, users.Email, users.Birthday, users.Gender, users.Address, users.PhoneNumber FROM employees as e JOIN users ON e.UserID = users.UserID;",
       {
         type: QueryTypes.SELECT,
       }

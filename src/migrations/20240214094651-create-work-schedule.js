@@ -22,6 +22,9 @@ module.exports = {
       isScheduled: {
         type: Sequelize.BOOLEAN
       },
+      ChannelID: {
+        type: Sequelize.INTEGER
+      },
       createdBy: {
         type: Sequelize.INTEGER
       },

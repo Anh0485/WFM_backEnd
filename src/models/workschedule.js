@@ -18,6 +18,7 @@ module.exports = (sequelize, DataTypes) => {
     ShiftTypeID: DataTypes.INTEGER,
     workdate: DataTypes.DATE,
     isScheduled: DataTypes.BOOLEAN,
+    ChannelID: DataTypes.INTEGER,
     createdBy: DataTypes.INTEGER,
     updatedBy: DataTypes.INTEGER
   }, {
