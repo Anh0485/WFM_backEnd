@@ -79,5 +79,88 @@ const getAllOT = asyncHandler(async (req, res) => {
 });
 
 
+// @desc approve Request
+// @routes GET api/overtime/request/:id
+// @access private
 
-export { createdOT, getAllOT };
+const aprrovedRequest = asyncHandler(async(req,res)=>{
+  
+  try{
+    const {id} = req.params;
+    console.log('id', id)
+    const aprrovedID = req.createdBy;
+    const request = await db.Overtime.findOne({
+      attributes: ["OverTimeID"],
+      where: {
+        OverTimeID: id,
+      },
+    })
+    if(request){
+      const updateRequest = await sequelize.query(
+        `update overtimes 
+        set Status = 'approved', ApprovedBy = :aprrovedID  
+        where OverTimeID = :id 
+        `,{
+        replacements:{
+          id: id,
+          aprrovedID: aprrovedID
+        }
+      })
+      res.status(200).json({
+        message:'aprroved request',
+      });
+    }else{
+      res.status(400).json({
+        message:'request isnot exits'
+      })
+    }
+  }catch(e){
+    console.error(e)
+  }
+  
+})
+
+// @desc delete overtime
+// @routes delete api/overtime/:id
+// @access private
+
+const deleteOT = asyncHandler(async(req,res)=>{
+  try{
+    const {id} = req.params;
+
+    const ot = await db.Overtime.findOne({
+      attributes: ["OverTimeID"],
+      where: {
+        OverTimeID: id,
+      },
+    })
+
+    if(ot){
+      const deleteOvertime = await sequelize.query(`delete from overtimes where OverTimeID = :id`,{
+        replacements: {
+          id: id
+        },
+        type: QueryTypes.DELETE
+      })
+      res.status(200).json({
+        message:'delete overtime successfully'
+      })
+    }else{
+      res.status(400).json({message:'OverTime isnot exits'})
+    }
+
+
+  }catch(e){
+    console.error(e)
+  }
+})
+
+// @desc update overtime
+// @routes delete api/overtime/:id
+// @access private
+
+
+
+
+
+export { createdOT, getAllOT, aprrovedRequest, deleteOT };

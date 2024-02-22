@@ -300,7 +300,7 @@ const getAllWSchedule = asyncHandler(async (req, res) => {
   try {
     const allWSchedule = await sequelize.query(
       `SELECT w.ScheduleID, e.EmployeeID, CONCAT(u.FirstName, ' ', u.LastName) AS FullName,s.ShiftTypeID ,s.ShiftStart, s.ShiftEnd,
-      date_format(w.workdate, '%m-%d-%Y') as workdate, w.isScheduled,c.ChannelName, CONCAT(u2.FirstName, ' ', u2.LastName) AS CreatedBy, 
+      date_format(w.workdate, '%m-%d-%Y') as workdate, w.isScheduled,c.ChannelID,c.ChannelName, CONCAT(u2.FirstName, ' ', u2.LastName) AS CreatedBy, 
           DATE_FORMAT(w.createdAt, '%d-%m-%Y') AS createdAt
           FROM workschedules AS w
           JOIN employees AS e ON w.EmployeeID = e.EmployeeID
@@ -313,7 +313,6 @@ const getAllWSchedule = asyncHandler(async (req, res) => {
         type: QueryTypes.SELECT,
       }
     );
-
 
     res.status(200).json({
       message: "get all wschedule successfully",
