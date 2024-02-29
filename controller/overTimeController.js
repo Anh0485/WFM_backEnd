@@ -9,8 +9,6 @@ import { QueryTypes } from "sequelize";
 const createdOT = asyncHandler(async (req, res) => {
   const createdBy = req.createdBy;
   const { OvertimeDate, OvertimeHour, Reason } = req.body;
-
-
   try {
     const id = req.id;
     const employeeID = await sequelize.query(
@@ -60,11 +58,11 @@ const createdOT = asyncHandler(async (req, res) => {
 const getAllOT = asyncHandler(async (req, res) => {
   try {
     const overtime = await sequelize.query(
-      `select ot.OverTimeID, ot.EmployeeID, CONCAT(u.LastName, ' ', u.FirstName) as FullName, ot.OvertimeHour, date_format(ot.OvertimeDate,'%d-%m-%Y') as OvertimeDate , ot.Status
+      `select ot.OverTimeID, ot.EmployeeID, CONCAT(u.LastName, ' ', u.FirstName) as FullName, ot.OvertimeHour, date_format(ot.OvertimeDate,'%d/%m/%Y') as OvertimeDate , ot.Status, ot.Reason
       from overtimes as ot
       join employees as e on e.EmployeeID = ot.EmployeeID
       join users as u on e.UserID = u.UserID`,
-      {
+      { 
         type: QueryTypes.SELECT,
       }
     );
@@ -83,12 +81,12 @@ const getAllOT = asyncHandler(async (req, res) => {
 // @routes GET api/overtime/request/:id
 // @access private
 
-const aprrovedRequest = asyncHandler(async(req,res)=>{
-  
+const reviewRequest = asyncHandler(async(req,res)=>{
+  const {Status} = req.body;
   try{
     const {id} = req.params;
     console.log('id', id)
-    const aprrovedID = req.createdBy;
+    const approvedID = req.createdBy;
     const request = await db.Overtime.findOne({
       attributes: ["OverTimeID"],
       where: {
@@ -98,16 +96,17 @@ const aprrovedRequest = asyncHandler(async(req,res)=>{
     if(request){
       const updateRequest = await sequelize.query(
         `update overtimes 
-        set Status = 'approved', ApprovedBy = :aprrovedID  
+        set Status = :Status , ApprovedBy = :approvedID  
         where OverTimeID = :id 
         `,{
         replacements:{
           id: id,
-          aprrovedID: aprrovedID
+          Status: Status, 
+          approvedID: approvedID
         }
       })
       res.status(200).json({
-        message:'aprroved request',
+        message:'review request successfully',
       });
     }else{
       res.status(400).json({
@@ -163,4 +162,4 @@ const deleteOT = asyncHandler(async(req,res)=>{
 
 
 
-export { createdOT, getAllOT, aprrovedRequest, deleteOT };
+export { createdOT, getAllOT, reviewRequest, deleteOT };
