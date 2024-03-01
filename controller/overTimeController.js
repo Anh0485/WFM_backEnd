@@ -106,7 +106,7 @@ const reviewRequest = asyncHandler(async(req,res)=>{
         }
       })
       res.status(200).json({
-        message:'review request successfully',
+        message:'review request successfully', updateRequest
       });
     }else{
       res.status(400).json({
@@ -154,12 +154,73 @@ const deleteOT = asyncHandler(async(req,res)=>{
   }
 })
 
-// @desc update overtime
-// @routes delete api/overtime/:id
+// @desc get overtime with Status = 'peding'
+// @routes GET api/overtime/pending
 // @access private
 
+const pendingOT = asyncHandler(async(req, res)=>{
+  try{
+    const pending  = await sequelize.query(`select ot.OverTimeID, ot.EmployeeID, CONCAT(u.LastName, ' ', u.FirstName) as FullName, ot.OvertimeHour, date_format(ot.OvertimeDate,'%d/%m/%Y') as OvertimeDate , ot.Status, ot.Reason
+    from overtimes as ot
+    join employees as e on e.EmployeeID = ot.EmployeeID
+    join users as u on e.UserID = u.UserID
+    where ot.Status = 'pending'`,
+    { 
+      type: QueryTypes.SELECT,
+    });
+
+    res.status(200).json({message:'get ot with pending status',pending })
+  }catch(e){
+    console.error(e)
+  }
+})
+
+// @desc get overtime with Status = 'approved'
+// @routes GET api/overtime/approved
+// @access private
+
+const approvedOT = asyncHandler(async(req,res)=>{
+  try{
+    const approved  = await sequelize.query(`select ot.OverTimeID, ot.EmployeeID, CONCAT(u.LastName, ' ', u.FirstName) as FullName, ot.OvertimeHour, date_format(ot.OvertimeDate,'%d/%m/%Y') as OvertimeDate , ot.Status, ot.Reason
+    from overtimes as ot
+    join employees as e on e.EmployeeID = ot.EmployeeID
+    join users as u on e.UserID = u.UserID
+    where ot.Status = 'approved'`,
+    { 
+      type: QueryTypes.SELECT,
+    });
+
+    res.status(200).json({message:'get ot with approved status', approved })
+
+  }catch(e){
+    console.error(e)
+  }
+})
+
+
+// @desc get overtime with Status = 'reject'
+// @routes GET api/overtime/approved
+// @access private
+
+const rejectOT = asyncHandler(async(req,res)=>{
+  try{
+    const reject  = await sequelize.query(`select ot.OverTimeID, ot.EmployeeID, CONCAT(u.LastName, ' ', u.FirstName) as FullName, ot.OvertimeHour, date_format(ot.OvertimeDate,'%d/%m/%Y') as OvertimeDate , ot.Status, ot.Reason
+    from overtimes as ot
+    join employees as e on e.EmployeeID = ot.EmployeeID
+    join users as u on e.UserID = u.UserID
+    where ot.Status = 'reject'`,
+    { 
+      type: QueryTypes.SELECT,
+    });
+
+    res.status(200).json({message:'get ot with reject status', reject })
+
+  }catch(e){
+    console.error(e)
+  }
+})
 
 
 
 
-export { createdOT, getAllOT, reviewRequest, deleteOT };
+export { createdOT, getAllOT, reviewRequest, deleteOT, pendingOT, approvedOT, rejectOT };
