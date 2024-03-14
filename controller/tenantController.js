@@ -2,6 +2,7 @@ import db, { sequelize } from "../src/models/index.js";
 import asyncHandler from "../middleware/asyncHandler.js";
 import { QueryTypes, json } from "sequelize";
 import moment, { Moment } from "moment";
+import { Types } from "mysql2";
 // @desc created tenants
 // @routes POST api/superadmin/tenant/createTenant
 // @access private
@@ -124,8 +125,39 @@ const updateTenant = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc get all TenantID & TenantName
-// @routes GET api/superadmin/tenant
-// @access private/ superadmin
+// @desc get TenantID
+// @routes GET api/tenantid
+// @access private/ admin
 
-export { createdTenant, getAllTenants, deleteTenants, updateTenant };
+const getTenantID = asyncHandler(async (req, res) => {
+  try {
+    const AccountID = req.id;
+
+    const TenantID = await sequelize.query(
+      `
+    select a.username, u.Email, t.TenantName, t.TenantID
+from employees as e 
+join users as u on u.UserID = e.UserID
+join tenants as t on t.TenantID = e. TenantID
+join accounts as a on a.AccountID = e.AccountID
+where a.AccountID = :id
+    `,
+      {
+        replacements: {
+          id: AccountID,
+        },
+        type: QueryTypes.SELECT,
+      }
+    );
+
+    res.status(200).json({
+      errCode: 0,
+      TenantID
+    })
+
+  } catch (e) {
+    console.error(e);
+  }
+});
+
+export { createdTenant, getAllTenants, deleteTenants, updateTenant, getTenantID };

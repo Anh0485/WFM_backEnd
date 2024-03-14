@@ -27,8 +27,9 @@ const addEmployee = asyncHandler(async (req, res) => {
       attributes: ["UserID", "Email"],
       where: { Email: Email },
     });
-
-    if (!user) {
+    if (user) {
+      res.status(200).json({ errCode: -1,message: "Email exist in system" });
+    } else {
       const addInforUser = await db.User.create({
         FirstName: FirstName,
         LastName: LastName,
@@ -38,9 +39,7 @@ const addEmployee = asyncHandler(async (req, res) => {
         PhoneNumber: PhoneNumber,
         Gender: Gender,
       });
-
       const userID = addInforUser.id;
-
       //created Account
       const salt = genSaltSync(10);
       const hashPassword = hashSync(password, salt);
@@ -51,6 +50,8 @@ const addEmployee = asyncHandler(async (req, res) => {
           username: username,
         },
       });
+
+      console.log('account', findAccount)
 
       if (findAccount === null) {
         console.log("username", username);
@@ -74,23 +75,28 @@ const addEmployee = asyncHandler(async (req, res) => {
           UserID: userID,
           AccountID: accountID,
         });
-        
+
         res
           .status(200)
-          .json({ message: "create employee successfully", createdEmployee, addInforUser });
+          .json({
+            errCode:0,
+            message: "create employee successfully",
+            createdEmployee,
+            addInforUser });
       } else {
-        res.json({ message: "username exits in system" });
+        res.status(200).json({ errCode:-1
+          ,message: "username exits in system" });
       }
-
       res.status(200).json({
+        errCode: 0,
         message: "Add employee success",
       });
-    } else {
-      res.json({ message: "Email exist in system" });
     }
   } catch (e) {
     console.log(`Error by: ${e}`);
   }
+
+  
 });
 
 // @desc get employee profile
@@ -145,7 +151,7 @@ const updateInforEmployee = asyncHandler(async (req, res) => {
         type: QueryTypes.SELECT,
       }
     );
-    
+
     if (employee) {
       let query = `UPDATE users AS u 
       INNER JOIN employees AS e ON u.UserID = e.UserID 
@@ -161,8 +167,8 @@ const updateInforEmployee = asyncHandler(async (req, res) => {
         e.EmployeeID = :EmployeeID
       `;
 
-      const result = await sequelize.query(query,{
-        replacements:{
+      const result = await sequelize.query(query, {
+        replacements: {
           FirstName: req.body.FirstName || employee[0].FirstName,
           LastName: req.body.LastName || employee[0].LastName,
           Birthday: req.body.Birthday || employee[0].Birthday,
@@ -170,10 +176,10 @@ const updateInforEmployee = asyncHandler(async (req, res) => {
           Address: req.body.Address || employee[0].Address,
           PhoneNumber: req.body.PhoneNumber || employee[0].PhoneNumber,
           Gender: req.body.Gender || employee[0].Gender,
-          EmployeeID : id
-        }
-      })
-      
+          EmployeeID: id,
+        },
+      });
+
       res.status(200).json({
         message: "Update success",
         result,
@@ -262,7 +268,12 @@ const searchEmployee = asyncHandler(async (req, res) => {
 const getAllEmployee = asyncHandler(async (req, res) => {
   try {
     const employee = await sequelize.query(
-      "SELECT e.EmployeeID,CONCAT(users.LastName, ' ', users.FirstName) AS FullName, users.FirstName, users.LastName, users.Email, users.Birthday, users.Gender, users.Address, users.PhoneNumber FROM employees as e JOIN users ON e.UserID = users.UserID;",
+      `SELECT e.EmployeeID,
+      CONCAT(users.LastName, ' ', users.FirstName) AS FullName, users.FirstName, users.LastName, r.RoleName,
+      users.Email, users.Birthday, users.Gender, users.Address, users.PhoneNumber 
+      FROM employees as e 
+      JOIN users ON e.UserID = users.UserID
+      JOIN roles as r on r.RoleID = e.RoleID`,
       {
         type: QueryTypes.SELECT,
       }
@@ -277,17 +288,16 @@ const getAllEmployee = asyncHandler(async (req, res) => {
 // @routes GET /api/employee
 // @access private
 
-const getAllRole = asyncHandler(async(req,res)=>{
-  try{
-    const allRole = await sequelize.query("SELECT * FROM roles",{
-      type: QueryTypes.SELECT
-    })
-    res.status(200).json(allRole)
-  }catch(e){
-    console.error(e)
+const getAllRole = asyncHandler(async (req, res) => {
+  try {
+    const allRole = await sequelize.query("SELECT * FROM roles", {
+      type: QueryTypes.SELECT,
+    });
+    res.status(200).json(allRole);
+  } catch (e) {
+    console.error(e);
   }
-})
-
+});
 
 export {
   addEmployee,
@@ -296,5 +306,5 @@ export {
   deleteEmployee,
   searchEmployee,
   getAllEmployee,
-  getAllRole
+  getAllRole,
 };

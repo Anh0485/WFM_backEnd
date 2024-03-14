@@ -323,6 +323,44 @@ const getAllWSchedule = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc get total ontime  today
+// @routes GET api/workschedule/ontime
+// @access private/ supervisor
+
+const formatDate = (date) => {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  
+  return `${year}-${month}-${day}`;
+}
+
+const onTime =  asyncHandler(async(req,res)=>{
+  try{
+    const date = new Date();
+    const now = formatDate(date);
+    const attent = await sequelize.query(`
+    SELECT COUNT(*) AS total_ontime
+		from workschedules as w
+        where w.workdate = :date;
+    `,{ 
+      replacements: {
+      date: now,
+    },
+      type: QueryTypes.SELECT,
+    });
+
+    res.status(200).json({
+      mesasge:'ok',
+      attent
+    })
+
+  }catch(e){
+    console.error(e)
+  }
+})
+
+
 export {
   createdShift,
   updatedShift,
@@ -333,4 +371,5 @@ export {
   updateWSchedule,
   deleteWSchedule,
   getAllWSchedule,
+  onTime
 };

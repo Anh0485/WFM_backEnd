@@ -24,4 +24,28 @@ const totalAgent = asyncHandler(async(req,res)=>{
     }
 })
 
-export {totalAgent}
+
+// @desc get total supervisor
+// @routes GET api/total/supervisor
+// @access private
+
+const totalSupervisor = asyncHandler(async(req,res)=>{
+    try{
+        const supervisor = await sequelize.query(`SELECT COUNT(*) AS total_supervisor
+        FROM employees as e
+        join roles as r on r.RoleID = e.RoleID
+        where r.RoleName = 'supervisor'`,{
+            type: QueryTypes.SELECT,
+        })
+
+        res.status(200).json({
+            message:'get total supervisor successfully',
+            supervisor
+        })
+    }catch(e){
+        console.error(e)
+    }
+})
+
+
+export {totalAgent,totalSupervisor}
