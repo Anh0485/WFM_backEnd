@@ -270,7 +270,7 @@ const getAllEmployee = asyncHandler(async (req, res) => {
     const employee = await sequelize.query(
       `SELECT e.EmployeeID,
       CONCAT(users.LastName, ' ', users.FirstName) AS FullName, users.FirstName, users.LastName, r.RoleName,
-      users.Email, users.Birthday, users.Gender, users.Address, users.PhoneNumber 
+      users.Email, users.Birthday, users.Gender, users.address, users.PhoneNumber 
       FROM employees as e 
       JOIN users ON e.UserID = users.UserID
       JOIN roles as r on r.RoleID = e.RoleID`,
@@ -288,12 +288,24 @@ const getAllEmployee = asyncHandler(async (req, res) => {
 // @routes GET /api/employee
 // @access private
 
+
+
 const getAllRole = asyncHandler(async (req, res) => {
   try {
+    const id = req.RoleID;
+    let filteredRole = [];
     const allRole = await sequelize.query("SELECT * FROM roles", {
       type: QueryTypes.SELECT,
     });
-    res.status(200).json(allRole);
+
+    if( id === 1){
+      filteredRole = allRole.filter(role => role.RoleID !== 1);
+    }else if( id === 2){
+      filteredRole = allRole.filter(role => role.RoleID !== 1 && role.RoleID !== 2);
+    }else if( id  === 3 ){
+      filteredRole = allRole.filter(role => role.RoleID !== 1 && role.RoleID !== 2 && role.RoleID !== 3);
+    }
+    res.status(200).json(filteredRole);
   } catch (e) {
     console.error(e);
   }
