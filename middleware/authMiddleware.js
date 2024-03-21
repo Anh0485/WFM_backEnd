@@ -21,6 +21,7 @@ export const protect = asyncHandler(async (req, res, next) => {
 
       req.id = decoded.id;
       req.RoleID = decoded.roleID;
+      req.TenantName = decoded.tenantName
 
       req.ModuleName = decoded.permission.map(item => item.ModuleName);
 
@@ -32,7 +33,8 @@ export const protect = asyncHandler(async (req, res, next) => {
       
 
       //check permission method
-      // const methodType = req.method;
+      const methodType = req.method;
+     
       // switch(methodType){
       //   case 'POST':
       //     for (let i = 0; i < decoded.permission.length; i++){

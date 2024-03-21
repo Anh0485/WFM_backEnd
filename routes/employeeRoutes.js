@@ -6,14 +6,15 @@ import {
   getEmployeeProfileByID,
   updateInforEmployee,
   deleteEmployee,
-  searchEmployee,
   getAllEmployee,
   getAllRole,
+  getEmployeeByTenant,
 } from "../controller/employeeController";
 import { protect, superAdmin } from "../middleware/authMiddleware";
 
 router.post("/addEmployee", protect, addEmployee);
-router.get("/allRole",protect, getAllRole)
+router.get("/allRole",protect, getAllRole);
+router.get("/byTenant", protect, getEmployeeByTenant)
 router
   .route("/:id")
   .get(getEmployeeProfileByID)

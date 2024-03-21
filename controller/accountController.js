@@ -22,6 +22,17 @@ const loginAccount = asyncHandler(async (req, res) => {
       raw: true,
     });
 
+    const tenant = await sequelize.query(`select t.TenantID, t.TenantName
+    from employees as e
+    join accounts as a on e.AccountID = a.AccountID
+    join tenants as t on t.TenantID = e.TenantID
+    where a.AccountID = :id`, {
+      type: QueryTypes.SELECT,
+      replacements:{
+        id : account.AccountID
+      }
+    })
+
     
 
     if (account && account.username == username) {
@@ -76,7 +87,7 @@ const loginAccount = asyncHandler(async (req, res) => {
         });
 
         console.log('transformedPermissions', transformedPermissions)
-        
+        console.log('tenantName:' ,tenant[0].TenantName)
 
         res.json({
           AccountID: account.AccountID,
@@ -84,7 +95,9 @@ const loginAccount = asyncHandler(async (req, res) => {
           RoleID: account.RoleID,
           token: generateToken(account.AccountID, 
             account.RoleID, 
-            transformedPermissions),
+            tenant[0].TenantName,
+            transformedPermissions
+            ),
           status: "true",
         });
       } else {

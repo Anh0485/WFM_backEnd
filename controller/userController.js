@@ -6,11 +6,12 @@ import { QueryTypes, json } from "sequelize";
 const getUserProfile = asyncHandler(async(req,res)=>{
     try{
         const id = req.id;
-        const user = await sequelize.query(`SELECT CONCAT(u.LastName,' ', u.FirstName) AS FullName, r.RoleName
+        const user = await sequelize.query(`SELECT CONCAT(u.LastName,' ', u.FirstName) AS FullName, r.RoleName, t.TenantName
         FROM users AS u
         JOIN employees AS e ON e.UserID = u.UserID
         JOIN accounts AS a ON a.AccountID = e.AccountID
         JOIN Roles AS r ON a.RoleID = r.RoleID
+        JOIN tenants as t on e.TenantID = t.TenantID
         WHERE a.AccountID = :id`,{
             type: QueryTypes.SELECT,
           replacements: {
