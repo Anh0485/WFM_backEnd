@@ -28,7 +28,7 @@ const addEmployee = asyncHandler(async (req, res) => {
       where: { Email: Email },
     });
     if (user) {
-      res.status(200).json({ errCode: -1,message: "Email exist in system" });
+      res.status(200).json({ errCode: -1, message: "Email exist in system" });
     } else {
       const addInforUser = await db.User.create({
         FirstName: FirstName,
@@ -51,7 +51,7 @@ const addEmployee = asyncHandler(async (req, res) => {
         },
       });
 
-      console.log('account', findAccount)
+      console.log("account", findAccount);
 
       if (findAccount === null) {
         console.log("username", username);
@@ -71,21 +71,21 @@ const addEmployee = asyncHandler(async (req, res) => {
           EmployeeID: userID,
           TenantID: TenantID,
           RoleID: roleID,
-          Status: 'Active',
+          Status: "Active",
           UserID: userID,
           AccountID: accountID,
         });
 
+        res.status(200).json({
+          errCode: 0,
+          message: "create employee successfully",
+          createdEmployee,
+          addInforUser,
+        });
+      } else {
         res
           .status(200)
-          .json({
-            errCode:0,
-            message: "create employee successfully",
-            createdEmployee,
-            addInforUser });
-      } else {
-        res.status(200).json({ errCode:-1
-          ,message: "username exits in system" });
+          .json({ errCode: -1, message: "username exits in system" });
       }
       res.status(200).json({
         errCode: 0,
@@ -95,8 +95,6 @@ const addEmployee = asyncHandler(async (req, res) => {
   } catch (e) {
     console.log(`Error by: ${e}`);
   }
-
-  
 });
 
 // @desc get employee profile
@@ -265,7 +263,6 @@ const searchEmployee = asyncHandler(async (req, res) => {
 // @routes GET /api/superadmin/employee
 // @access private
 
-
 const getAllEmployee = asyncHandler(async (req, res) => {
   try {
     const employee = await sequelize.query(
@@ -289,7 +286,6 @@ const getAllEmployee = asyncHandler(async (req, res) => {
 // @routes GET /api/employee
 // @access private
 
-
 const getAllRole = asyncHandler(async (req, res) => {
   try {
     const id = req.RoleID;
@@ -298,12 +294,16 @@ const getAllRole = asyncHandler(async (req, res) => {
       type: QueryTypes.SELECT,
     });
 
-    if( id === 1){
-      filteredRole = allRole.filter(role => role.RoleID !== 1);
-    }else if( id === 2){
-      filteredRole = allRole.filter(role => role.RoleID !== 1 && role.RoleID !== 2);
-    }else if( id  === 3 ){
-      filteredRole = allRole.filter(role => role.RoleID !== 1 && role.RoleID !== 2 && role.RoleID !== 3);
+    if (id === 1) {
+      filteredRole = allRole.filter((role) => role.RoleID !== 1);
+    } else if (id === 2) {
+      filteredRole = allRole.filter(
+        (role) => role.RoleID !== 1 && role.RoleID !== 2
+      );
+    } else if (id === 3) {
+      filteredRole = allRole.filter(
+        (role) => role.RoleID !== 1 && role.RoleID !== 2 && role.RoleID !== 3
+      );
     }
     res.status(200).json(filteredRole);
   } catch (e) {
@@ -315,32 +315,49 @@ const getAllRole = asyncHandler(async (req, res) => {
 // @routes GET /api/employeeAtTenant
 // @access private
 
-const getEmployeeByTenant = asyncHandler(async(req,res)=>{
-  try{
-    const TenantName = req.TenantName;
-    const employee = await sequelize.query(`SELECT e.EmployeeID,
-    CONCAT(users.LastName, ' ', users.FirstName) AS FullName, users.FirstName, users.LastName, r.RoleName, t.TenantName,
-    users.Email, users.Birthday, users.Gender, users.address, users.PhoneNumber 
-    FROM employees as e 
-    JOIN users ON e.UserID = users.UserID
-    JOIN roles as r on r.RoleID = e.RoleID
-    JOIN tenants as t on e.TenantID = t.TenantID
-    where t.TenantName = :TenantName`, {
-      type: QueryTypes.SELECT,
-      replacements:{
-        TenantName: TenantName
-      }
-    });
+const getEmployeeByTenant = asyncHandler(async (req, res) => {
+  try {
+    const roleid = req.RoleID;
+    if (roleid === 1) {
+      const employee = await sequelize.query(
+        `SELECT e.EmployeeID,
+        CONCAT(users.LastName, ' ', users.FirstName) AS FullName, users.FirstName, users.LastName, r.RoleName,
+        users.Email, users.Birthday, users.Gender, users.address, users.PhoneNumber 
+        FROM employees as e 
+        JOIN users ON e.UserID = users.UserID
+        JOIN roles as r on r.RoleID = e.RoleID`,
+        {
+          type: QueryTypes.SELECT,
+        }
+      );
+      res.status(200).json(employee);
+    } else {
+      const TenantName = req.TenantName;
+      const employee = await sequelize.query(
+        `SELECT e.EmployeeID,
+      CONCAT(users.LastName, ' ', users.FirstName) AS FullName, users.FirstName, users.LastName, r.RoleName, t.TenantName,
+      users.Email, users.Birthday, users.Gender, users.address, users.PhoneNumber 
+      FROM employees as e 
+      JOIN users ON e.UserID = users.UserID
+      JOIN roles as r on r.RoleID = e.RoleID
+      JOIN tenants as t on e.TenantID = t.TenantID
+      where t.TenantName = :TenantName`,
+        {
+          type: QueryTypes.SELECT,
+          replacements: {
+            TenantName: TenantName,
+          },
+        }
+      );
 
-    res.status(200).json({
-      errCode:0,
-      employee
-    })
-
-  }catch(e){
-    console.error(e)
+      res.status(200).json(
+        employee
+      );
+    }
+  } catch (e) {
+    console.error(e);
   }
-})
+});
 
 export {
   addEmployee,
@@ -350,5 +367,5 @@ export {
   searchEmployee,
   getAllEmployee,
   getAllRole,
-  getEmployeeByTenant
+  getEmployeeByTenant,
 };

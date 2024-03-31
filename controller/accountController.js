@@ -32,9 +32,17 @@ const loginAccount = asyncHandler(async (req, res) => {
         id : account.AccountID
       }
     })
+    console.log('tenant', tenant)
 
-    
+    let tenants;
+    if(tenant.length === 0){
+      tenants = 'None';
+    }else{
+      tenants = tenant[0].TenantName
+    }
+    console.log('tenants', tenants)
 
+  
     if (account && account.username == username) {
       const passwordHash = account.password;
 
@@ -82,12 +90,11 @@ const loginAccount = asyncHandler(async (req, res) => {
                 CanDelete: permission.CanDelete,
                 CanExport: permission.CanExport,
               }
-            
           };
         });
 
         console.log('transformedPermissions', transformedPermissions)
-        console.log('tenantName:' ,tenant[0].TenantName)
+        // console.log('tenantName:' , tenants)
 
         res.json({
           AccountID: account.AccountID,
@@ -95,7 +102,7 @@ const loginAccount = asyncHandler(async (req, res) => {
           RoleID: account.RoleID,
           token: generateToken(account.AccountID, 
             account.RoleID, 
-            tenant[0].TenantName,
+            tenants,
             transformedPermissions
             ),
           status: "true",
