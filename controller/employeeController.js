@@ -12,7 +12,7 @@ const addEmployee = asyncHandler(async (req, res) => {
     LastName,
     Birthday,
     Email,
-    Address,
+    address,
     PhoneNumber,
     Gender,
     username,
@@ -35,7 +35,7 @@ const addEmployee = asyncHandler(async (req, res) => {
         LastName: LastName,
         Birthday: Birthday,
         Email: Email,
-        Address: Address,
+        Address: address,
         PhoneNumber: PhoneNumber,
         Gender: Gender,
       });
@@ -171,7 +171,7 @@ const updateInforEmployee = asyncHandler(async (req, res) => {
           LastName: req.body.LastName || employee[0].LastName,
           Birthday: req.body.Birthday || employee[0].Birthday,
           Email: req.body.Email || employee[0].Email,
-          Address: req.body.Address || employee[0].Address,
+          Address: req.body.address || employee[0].Address,
           PhoneNumber: req.body.PhoneNumber || employee[0].PhoneNumber,
           Gender: req.body.Gender || employee[0].Gender,
           EmployeeID: id,
@@ -353,11 +353,44 @@ const getEmployeeByTenant = asyncHandler(async (req, res) => {
       res.status(200).json(
         employee
       );
-    }
+    } 
   } catch (e) {
     console.error(e);
   }
 });
+
+
+//// @desc get employee by supervisor
+// @routes GET /api/agent
+// @access private
+
+
+const getAgent = asyncHandler(async(req,res)=>{
+  try{
+    const TenantName = req.TenantName;
+    const agent = await sequelize.query(`
+    select e.EmployeeID,
+      CONCAT(users.LastName, ' ', users.FirstName) AS FullName, users.FirstName, users.LastName, r.RoleName, t.TenantName,
+      users.Email, users.Birthday, users.Gender, users.address, users.PhoneNumber 
+      FROM employees as e 
+      JOIN users ON e.UserID = users.UserID
+      JOIN roles as r on r.RoleID = e.RoleID
+      JOIN tenants as t on e.TenantID = t.TenantID
+      where t.TenantName = :TenantName AND r.RoleName = 'Agent'
+    `,
+    {
+      type: QueryTypes.SELECT,
+      replacements: {
+        TenantName: TenantName,
+      },
+    })
+    res.status(200).json({
+      agent
+    })
+  }catch(e){
+    console.error(e)
+  }
+})
 
 export {
   addEmployee,
@@ -368,4 +401,5 @@ export {
   getAllEmployee,
   getAllRole,
   getEmployeeByTenant,
+  getAgent
 };

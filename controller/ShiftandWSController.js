@@ -298,26 +298,55 @@ const deleteWSchedule = asyncHandler(async (req, res) => {
 
 const getAllWSchedule = asyncHandler(async (req, res) => {
   try {
-    const allWSchedule = await sequelize.query(
-      `SELECT w.ScheduleID, e.EmployeeID, CONCAT(u.FirstName, ' ', u.LastName) AS FullName,s.ShiftTypeID ,s.ShiftStart, s.ShiftEnd,
-      date_format(w.workdate, '%m-%d-%Y') as workdate, w.isScheduled,c.ChannelID,c.ChannelName, CONCAT(u2.FirstName, ' ', u2.LastName) AS CreatedBy, 
-          DATE_FORMAT(w.createdAt, '%d-%m-%Y') AS createdAt
-          FROM workschedules AS w
-          JOIN employees AS e ON w.EmployeeID = e.EmployeeID
-          JOIN users AS u ON e.UserID = u.UserID
-          JOIN shifts AS s ON s.ShiftTypeID = w.ShiftTypeID
-          JOIN employees AS e2 ON w.createdBy = e2.AccountID
-          JOIN users AS u2 ON e2.UserID = u2.UserID
-          jOIN channels AS c on w.ChannelID = c.ChannelID`,
-      {
-        type: QueryTypes.SELECT,
-      }
-    );
-
-    res.status(200).json({
-      message: "get all wschedule successfully",
-      allWSchedule,
-    });
+    const roleid = req.id;
+    if(roleid === 1){
+      const allWSchedule = await sequelize.query(
+        `SELECT w.ScheduleID, e.EmployeeID, CONCAT(u.FirstName, ' ', u.LastName) AS FullName,s.ShiftTypeID ,s.ShiftStart, s.ShiftEnd,
+        date_format(w.workdate, '%m-%d-%Y') as workdate, w.isScheduled,c.ChannelID,c.ChannelName, CONCAT(u2.FirstName, ' ', u2.LastName) AS CreatedBy, 
+            DATE_FORMAT(w.createdAt, '%d-%m-%Y') AS createdAt
+            FROM workschedules AS w
+            JOIN employees AS e ON w.EmployeeID = e.EmployeeID
+            JOIN users AS u ON e.UserID = u.UserID
+            JOIN shifts AS s ON s.ShiftTypeID = w.ShiftTypeID
+            JOIN employees AS e2 ON w.createdBy = e2.AccountID
+            JOIN users AS u2 ON e2.UserID = u2.UserID
+            jOIN channels AS c on w.ChannelID = c.ChannelID`,
+        {
+          type: QueryTypes.SELECT,
+        }
+      );
+  
+      res.status(200).json({
+        message: "get all wschedule successfully",
+        allWSchedule,
+      });
+    } else{
+      const tenantName = req.TenantName;
+      const allWSchedule = await sequelize.query(
+        `SELECT w.ScheduleID, e.EmployeeID, CONCAT(u.FirstName, ' ', u.LastName) AS FullName,s.ShiftTypeID ,s.ShiftStart, s.ShiftEnd,
+        date_format(w.workdate, '%m-%d-%Y') as workdate, w.isScheduled,c.ChannelID,c.ChannelName, CONCAT(u2.FirstName, ' ', u2.LastName) AS CreatedBy, 
+            DATE_FORMAT(w.createdAt, '%d-%m-%Y') AS createdAt
+            FROM workschedules AS w
+            JOIN employees AS e ON w.EmployeeID = e.EmployeeID
+            JOIN users AS u ON e.UserID = u.UserID
+            JOIN shifts AS s ON s.ShiftTypeID = w.ShiftTypeID
+            JOIN employees AS e2 ON w.createdBy = e2.AccountID
+            JOIN users AS u2 ON e2.UserID = u2.UserID
+            jOIN channels AS c on w.ChannelID = c.ChannelID
+            join tenants as t on t.TenantID = e.TenantID
+            WHERE t.TenantName = :tenantName`,
+        {
+          type: QueryTypes.SELECT,
+          replacements:{
+            tenantName : tenantName
+          }
+        }
+      );
+      res.status(200).json({
+        message: "get all wschedule successfully",
+        allWSchedule,
+      });
+    }
   } catch (e) {
     console.log(e);
   }
