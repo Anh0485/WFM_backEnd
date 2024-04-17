@@ -9,6 +9,7 @@ import {
   getAllShift,
   getAllWSchedule,
   getShiftByID,
+  getTotalWorkHour,
   onTime,
   updateWSchedule,
   updatedShift,
@@ -20,7 +21,8 @@ router.post("/createdWSchedule", protect, createdWorkSchedule);
 
 router.get("/", protect, getAllShift);
 router.get("/workschedule", protect, getAllWSchedule);
-router.get("/workschedule/ontime", protect, onTime)
+router.get("/workschedule/ontime", protect, onTime);
+router.get("/workschedule/totalWorkHour", protect, getTotalWorkHour)
 router
   .route("/:id")
   .put(protect, updatedShift)
