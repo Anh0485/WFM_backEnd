@@ -298,7 +298,8 @@ const deleteWSchedule = asyncHandler(async (req, res) => {
 
 const getAllWSchedule = asyncHandler(async (req, res) => {
   try {
-    const roleid = req.id;
+    const roleid = req.RoleID;
+    console.log('roleid', roleid)
     if(roleid === 1){
       const allWSchedule = await sequelize.query(
         `SELECT w.ScheduleID, e.EmployeeID, CONCAT(u.FirstName, ' ', u.LastName) AS FullName,s.ShiftTypeID ,s.ShiftStart, s.ShiftEnd,
@@ -317,7 +318,7 @@ const getAllWSchedule = asyncHandler(async (req, res) => {
       );
   
       res.status(200).json({
-        message: "get all wschedule successfully",
+        message: "get all wschedule successfully by superadmin",
         allWSchedule,
       });
     } else{
@@ -388,6 +389,7 @@ const onTime =  asyncHandler(async(req,res)=>{
     console.error(e)
   }
 })
+
 
 
 export {

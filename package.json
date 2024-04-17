@@ -23,7 +23,8 @@
     "moment": "^2.29.4",
     "mysql2": "^3.6.1",
     "nodemailer": "^6.9.6",
-    "sequelize": "6.24"
+    "sequelize": "6.24",
+    "socket.io": "^4.7.5"
   },
   "devDependencies": {
     "@babel/core": "^7.23.0",

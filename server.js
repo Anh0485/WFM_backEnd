@@ -14,7 +14,8 @@ import callRoutes from "./routes/callRoutes.js";
 import teamRoutes from "./routes/teamRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import channelRoutes from "./routes/channelRoutes.js";
-import totalRoutes from "./routes/totalRoutes.js"
+import totalRoutes from "./routes/totalRoutes.js";
+import { Server } from "socket.io";
 dotenv.config();
 connectDB_01();
 
@@ -74,7 +75,10 @@ app.use("/api/total",totalRoutes)
 app.use("/api/shift", shiftRoutes);
 const PORT = process.env.PORT || 5000;
 
-app.listen(
+const server = app.listen(
   PORT,
   console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`)
 );
+
+const io = new Server(server);
+io.listen(3000, console.log('Io running in port 3000'))

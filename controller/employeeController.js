@@ -368,25 +368,45 @@ const getEmployeeByTenant = asyncHandler(async (req, res) => {
 const getAgent = asyncHandler(async(req,res)=>{
   try{
     const TenantName = req.TenantName;
-    const agent = await sequelize.query(`
-    select e.EmployeeID,
-      CONCAT(users.LastName, ' ', users.FirstName) AS FullName, users.FirstName, users.LastName, r.RoleName, t.TenantName,
-      users.Email, users.Birthday, users.Gender, users.address, users.PhoneNumber 
-      FROM employees as e 
-      JOIN users ON e.UserID = users.UserID
-      JOIN roles as r on r.RoleID = e.RoleID
-      JOIN tenants as t on e.TenantID = t.TenantID
-      where t.TenantName = :TenantName AND r.RoleName = 'Agent'
-    `,
-    {
-      type: QueryTypes.SELECT,
-      replacements: {
-        TenantName: TenantName,
-      },
-    })
-    res.status(200).json({
-      agent
-    })
+    const roleid = req.RoleID;
+    if(roleid === 1){
+      const agent = await sequelize.query(`
+      select e.EmployeeID,
+        CONCAT(users.LastName, ' ', users.FirstName) AS FullName, users.FirstName, users.LastName, r.RoleName, t.TenantName,
+        users.Email, users.Birthday, users.Gender, users.address, users.PhoneNumber 
+        FROM employees as e 
+        JOIN users ON e.UserID = users.UserID
+        JOIN roles as r on r.RoleID = e.RoleID
+        JOIN tenants as t on e.TenantID = t.TenantID
+      `,
+      {
+        type: QueryTypes.SELECT,
+      })
+      res.status(200).json({
+        agent
+      })
+    }else{
+      const agent = await sequelize.query(`
+      select e.EmployeeID,
+        CONCAT(users.LastName, ' ', users.FirstName) AS FullName, users.FirstName, users.LastName, r.RoleName, t.TenantName,
+        users.Email, users.Birthday, users.Gender, users.address, users.PhoneNumber 
+        FROM employees as e 
+        JOIN users ON e.UserID = users.UserID
+        JOIN roles as r on r.RoleID = e.RoleID
+        JOIN tenants as t on e.TenantID = t.TenantID
+        where t.TenantName = :TenantName AND r.RoleName = 'Agent'
+      `,
+      {
+        type: QueryTypes.SELECT,
+        replacements: {
+          TenantName: TenantName,
+        },
+      })
+      res.status(200).json({
+        agent
+      })
+    }
+    
   }catch(e){
     console.error(e)
   }
