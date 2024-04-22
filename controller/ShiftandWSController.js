@@ -412,15 +412,16 @@ const getTotalWorkHour = asyncHandler(async (req, res) => {
       console.log(startDate, endDate);
       const workHour = await sequelize.query(
         `
-      select w.EmployeeID,CONCAT(u.firstName, '', u.lastName) AS fullname, 
-sum(Hour(TIMEDIFF(ShiftEnd, ShiftStart))) AS TOTALWORKINGHOURS
-from workschedules as w
-join employees as e on w.EmployeeID = e.EmployeeID
-join shifts as s on w.ShiftTypeID = s.ShiftTypeID
-join users as u on u.UserID = e.UserID
-join tenants as t on t.TenantID = e.TenantID
-WHERE w.workdate BETWEEN :startDate AND :endDate
-GROUP BY w.EmployeeID;
+        select w.EmployeeID,CONCAT(u.firstName, ' ', u.lastName) AS fullname, c.ChannelName,
+        sum(Hour(TIMEDIFF(ShiftEnd, ShiftStart))) AS TOTALWORKINGHOURS
+        from workschedules as w
+        join employees as e on w.EmployeeID = e.EmployeeID
+        join shifts as s on w.ShiftTypeID = s.ShiftTypeID
+        join users as u on u.UserID = e.UserID
+        join tenants as t on t.TenantID = e.TenantID
+        join channels as c on c.ChannelID = w.ChannelID
+        WHERE w.workdate BETWEEN :startDate AND :endDate
+        GROUP BY w.EmployeeID;
       `,
         {
           type: QueryTypes.SELECT,
@@ -438,13 +439,14 @@ GROUP BY w.EmployeeID;
       const tenantName = req.TenantName;
       const workHour = await sequelize.query(
         `
-      select w.EmployeeID,CONCAT(u.firstName, ' ', u.lastName) AS fullname, 
+      select w.EmployeeID,CONCAT(u.firstName, ' ', u.lastName) AS fullname, c.ChannelName,
 sum(Hour(TIMEDIFF(ShiftEnd, ShiftStart))) AS TOTALWORKINGHOURS
 from workschedules as w
 join employees as e on w.EmployeeID = e.EmployeeID
 join shifts as s on w.ShiftTypeID = s.ShiftTypeID
 join users as u on u.UserID = e.UserID
 join tenants as t on t.TenantID = e.TenantID
+join channels as c on c.ChannelID = w.ChannelID
 WHERE w.workdate BETWEEN :startDate AND :endDate and t.TenantName = :tenantName 
 GROUP BY w.EmployeeID
       `,
