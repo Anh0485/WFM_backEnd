@@ -469,6 +469,20 @@ GROUP BY w.EmployeeID
   }
 });
 
+
+// @desc get total working hours by filter employee, startDate, endDate, ChannelD
+// @routes GET api/workschedule/totalWorkHour?EmployeeID=...&startDate=...&endDate=...&ChannelID=...
+// @access private/ /superadminadmin/supervisor
+
+const getTotalWorkHourWithAllFilter = asyncHandler(async(req,res)=>{
+  try{
+    
+
+  }catch(e){
+    console.error(e)
+  }
+})
+
 export {
   createdShift,
   updatedShift,
