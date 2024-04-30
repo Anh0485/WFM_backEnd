@@ -476,6 +476,66 @@ GROUP BY w.EmployeeID
 
 const getTotalWorkHourWithAllFilter = asyncHandler(async(req,res)=>{
   try{
+
+    const{ EmployeeID, startDate, endDate, ChannelID} = req.query;
+    const roleID = req.RoleID;
+    const tenantName = req.TenantName;
+
+    if(roleID ===1 ){
+      console.log('employeeID', EmployeeID)
+      const totalNumberWorkHours = await sequelize.query(`
+      select w.EmployeeID,CONCAT(u.firstName, ' ', u.lastName) AS fullname, c.ChannelName,
+      sum(Hour(TIMEDIFF(ShiftEnd, ShiftStart))) AS TOTALWORKINGHOURS
+      from workschedules as w
+      join employees as e on w.EmployeeID = e.EmployeeID
+      join shifts as s on w.ShiftTypeID = s.ShiftTypeID
+      join users as u on u.UserID = e.UserID
+      join tenants as t on t.TenantID = e.TenantID
+      join channels as c on c.ChannelID = w.ChannelID
+      WHERE e.EmployeeID = :EmployeeID AND w.workdate BETWEEN :startDate AND :endDate AND c.ChannelID = :ChannelID
+      GROUP BY w.EmployeeID
+      `,{
+        type: QueryTypes.SELECT,
+        replacements:{
+          EmployeeID: EmployeeID,
+          startDate: startDate,
+          endDate: endDate,
+          ChannelID: ChannelID
+        }
+      });
+      res.status(200).json({
+        errCode:0,
+        totalNumberWorkHours
+      })
+    } else{
+      const totalNumberWorkHours = await sequelize.query(`
+      select w.EmployeeID,CONCAT(u.firstName, ' ', u.lastName) AS fullname, c.ChannelName,
+      sum(Hour(TIMEDIFF(ShiftEnd, ShiftStart))) AS TOTALWORKINGHOURS
+      from workschedules as w
+      join employees as e on w.EmployeeID = e.EmployeeID
+      join shifts as s on w.ShiftTypeID = s.ShiftTypeID
+      join users as u on u.UserID = e.UserID
+      join tenants as t on t.TenantID = e.TenantID
+      join channels as c on c.ChannelID = w.ChannelID
+      WHERE e.EmployeeID = :EmployeeID AND w.workdate BETWEEN :startDate AND :endDate AND c.ChannelID = :ChannelID and t.TenantName = :tenantName
+      GROUP BY w.EmployeeID
+      `,{
+        type: QueryTypes.SELECT,
+        replacements:{
+          EmployeeID: EmployeeID,
+          startDate: startDate,
+          endDate: endDate,
+          ChannelID: ChannelID,
+          tenantName:tenantName
+        }
+      })
+      res.status(200).json({
+        errCode: 0,
+        totalNumberWorkHours
+      })
+    
+    }
+  
     
 
   }catch(e){
@@ -494,5 +554,6 @@ export {
   deleteWSchedule,
   getAllWSchedule,
   onTime,
-  getTotalWorkHour
+  getTotalWorkHour,
+  getTotalWorkHourWithAllFilter
 };
