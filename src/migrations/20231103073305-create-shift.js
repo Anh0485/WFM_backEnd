@@ -2,19 +2,22 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("Tenants", {
-      TenantID: {
+    await queryInterface.createTable("Shifts", {
+      ShiftTypeID: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER,
-        field: "TenantID",
+        field: "ShiftTypeID",
       },
-      TenantName: {
+      ShiftTypeName: {
         type: Sequelize.STRING,
       },
-      SubscriptionDetails: {
-        type: Sequelize.STRING,
+      ShiftStart: {
+        type: Sequelize.TIME,
+      },
+      ShiftEnd: {
+        type: Sequelize.TIME,
       },
       createdBy: {
         type: Sequelize.INTEGER,
@@ -23,20 +26,18 @@ module.exports = {
         type: Sequelize.INTEGER,
       },
       createdAt: {
-        // type: Sequelize.DATE,
-        // allowNull: true,
         type: "TIMESTAMP",
         defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
-        allowNull: true,
+        allowNull: false,
       },
       updatedAt: {
         type: "TIMESTAMP",
         defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
-        allowNull: true,
+        allowNull: false,
       },
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("Tenants");
+    await queryInterface.dropTable("Shifts");
   },
 };

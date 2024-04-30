@@ -1,42 +1,46 @@
-"use strict";
+'use strict';
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("Tenants", {
-      TenantID: {
+    await queryInterface.createTable('Calls', {
+      CallID: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER,
-        field: "TenantID",
+        field: "CallID",
       },
-      TenantName: {
-        type: Sequelize.STRING,
+      CallDate: {
+        type: Sequelize.DATE
       },
-      SubscriptionDetails: {
-        type: Sequelize.STRING,
+      CallName: {
+        type: Sequelize.STRING
       },
-      createdBy: {
-        type: Sequelize.INTEGER,
+      CallPhone: {
+        type: Sequelize.STRING
       },
-      updatedBy: {
-        type: Sequelize.INTEGER,
+      EmployeeID: {
+        type: Sequelize.INTEGER
+      },
+      CallDuration: {
+        type: Sequelize.INTEGER
+      },
+      ChannelID: {
+        type: Sequelize.INTEGER
       },
       createdAt: {
-        // type: Sequelize.DATE,
-        // allowNull: true,
         type: "TIMESTAMP",
         defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
-        allowNull: true,
+        allowNull: false,
       },
       updatedAt: {
         type: "TIMESTAMP",
         defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
-        allowNull: true,
-      },
+        allowNull: false,
+      }
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("Tenants");
-  },
+    await queryInterface.dropTable('Calls');
+  }
 };

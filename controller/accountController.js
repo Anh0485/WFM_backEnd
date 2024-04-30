@@ -1,11 +1,12 @@
 import { query } from "express";
-import asyncHandler from "../../middleware/asyncHandler.js";
-import generateToken from "../../utils/generateToken.js";
-import db from "../../src/models/index.js";
+import asyncHandler from "../middleware/asyncHandler.js";
+import generateToken from "../utils/generateToken.js";
+import db, { sequelize } from "../src/models/index.js";
 import crypto from "crypto";
 import { sendPasswordResetEmail } from "./emailController.js";
 import { hashSync, genSaltSync } from "bcrypt";
 import bcrypt from "bcryptjs";
+import { Op, QueryTypes } from "sequelize";
 
 // @desc Auth account & get token
 // @routes POST /api/account/login
@@ -21,6 +22,27 @@ const loginAccount = asyncHandler(async (req, res) => {
       raw: true,
     });
 
+    const tenant = await sequelize.query(`select t.TenantID, t.TenantName
+    from employees as e
+    join accounts as a on e.AccountID = a.AccountID
+    join tenants as t on t.TenantID = e.TenantID
+    where a.AccountID = :id`, {
+      type: QueryTypes.SELECT,
+      replacements:{
+        id : account.AccountID
+      }
+    })
+    console.log('tenant', tenant)
+
+    let tenants;
+    if(tenant.length === 0){
+      tenants = 'None';
+    }else{
+      tenants = tenant[0].TenantName
+    }
+    console.log('tenants', tenants)
+
+  
     if (account && account.username == username) {
       const passwordHash = account.password;
 
@@ -28,14 +50,61 @@ const loginAccount = asyncHandler(async (req, res) => {
 
       const isPasswordMatch = await bcrypt.compare(password, passwordHash);
 
+
+
       console.log("isPasswordMatch:", isPasswordMatch);
 
       if (isPasswordMatch) {
+        // const permissionDetail = await db.PermissionDetail.findOne({
+        //   attributes:["ModuleID","CanView","CanEdit","CanDelete","CanExport"],
+        //   where:{
+        //     PermissionID: account.PermissionID
+        //   }
+        // })
+        
+
+        const permissions = await sequelize.query(`SELECT permissions.PermissionID,modules.ModuleName, permissiondetails.CanAdd, permissiondetails.CanView, permissiondetails.CanEdit, permissiondetails.CanDelete, permissiondetails.CanExport
+        FROM accounts
+        JOIN permissions ON accounts.AccountID = permissions.AccountID
+        JOIN permissiondetails ON permissiondetails.PermissionID = permissions.PermissionID
+        JOIN modules ON permissiondetails.ModuleID = modules.ModuleID
+        where accounts.AccountID = :id`,
+        {
+          replacements: {
+            id: account.AccountID
+          },
+          type: QueryTypes.SELECT
+        });
+
+        console.log('permission', permissions);
+
+    
+        const transformedPermissions = permissions.map(permission => {
+          return {
+            ModuleName: permission.ModuleName,
+            permission_sub: 
+              {
+                CanAdd: permission.CanAdd,
+                CanView: permission.CanView,
+                CanEdit: permission.CanEdit,
+                CanDelete: permission.CanDelete,
+                CanExport: permission.CanExport,
+              }
+          };
+        });
+
+        console.log('transformedPermissions', transformedPermissions)
+        // console.log('tenantName:' , tenants)
+
         res.json({
           AccountID: account.AccountID,
           username: account.username,
           RoleID: account.RoleID,
-          token: generateToken(account.AccountID),
+          token: generateToken(account.AccountID, 
+            account.RoleID, 
+            tenants,
+            transformedPermissions
+            ),
           status: "true",
         });
       } else {
@@ -68,7 +137,7 @@ const logoutAccount = asyncHandler(async (req, res) => {
 const forgotPassoword = asyncHandler(async (req, res, next) => {
   try {
     const email = req.body.email;
-
+    
     const origin = req.header("Origin");
 
     const user = await db.User.findOne({
@@ -307,6 +376,30 @@ const addAccount = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc get all role
+// @routes get /api/account/role
+// @access private
+
+const getAllRole  = asyncHandler(async(req,res)=>{
+  try{
+
+    const allRole = await sequelize.query(`SELECT * FROM roles`,
+    {
+      type: QueryTypes.SELECTS,
+    });
+
+    res.status(200).json({
+      message:"get all role success",
+      allRole
+    })
+
+
+  }catch(e){
+    console.error(e)
+  }
+})
+
+
 export {
   loginAccount,
   logoutAccount,
@@ -314,4 +407,5 @@ export {
   validateResetTokenResetPassword,
   changePassword,
   addAccount,
+  getAllRole,
 };

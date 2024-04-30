@@ -1,38 +1,38 @@
-"use strict";
+'use strict';
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("Users", {
-      UserID: {
+    await queryInterface.createTable('Modules', {
+      ModuleID: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER,
-        field: "UserID",
+        field: "ModuleID",
       },
-      FirstName: {
-        type: Sequelize.STRING,
+      ModuleName: {
+        type: Sequelize.STRING
       },
-      LastName: {
-        type: Sequelize.STRING,
+      Description: {
+        type: Sequelize.STRING
       },
-      Birthday: {
-        type: Sequelize.DATEONLY,
+      path: {
+        type: Sequelize.STRING
       },
-      Email: {
-        type: Sequelize.STRING,
+      title: {
+        type: Sequelize.STRING
       },
-      Address: {
-        type: Sequelize.STRING,
+      icon: {
+        type: Sequelize.STRING
       },
-      PhoneNumber: {
-        type: Sequelize.STRING,
+      class: {
+        type: Sequelize.STRING
       },
       createdBy: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.INTEGER
       },
       updatedBy: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.INTEGER
       },
       createdAt: {
         type: "TIMESTAMP",
@@ -43,10 +43,10 @@ module.exports = {
         type: "TIMESTAMP",
         defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
         allowNull: false,
-      },
+      }
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("Users");
-  },
+    await queryInterface.dropTable('Modules');
+  }
 };

@@ -17,10 +17,15 @@ module.exports = (sequelize, DataTypes) => {
       SubscriptionDetails: DataTypes.STRING,
       createdBy: DataTypes.INTEGER,
       updatedBy: DataTypes.INTEGER,
+      // createdAt: {
+      //   type: DataTypes.DATE,
+      //   allowNull: true,
+      // },
     },
     {
       sequelize,
       modelName: "Tenants",
+      // timestamps: false
     }
   );
   Tenants.beforeCreate((tenant, options) => {

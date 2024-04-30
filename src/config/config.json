@@ -5,8 +5,8 @@
     "database": "wfm_project_02",
     "host":"localhost",
     "dialect": "mysql",
-    "timezone": "+07:00",
-    "query": {
+   
+    "query": {  
       "raw": true
     }
   },

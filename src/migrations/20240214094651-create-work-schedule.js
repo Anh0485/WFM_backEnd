@@ -1,42 +1,49 @@
-"use strict";
+'use strict';
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("Tenants", {
-      TenantID: {
+    await queryInterface.createTable('WorkSchedules', {
+      ScheduleID: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER,
-        field: "TenantID",
+        field: "ScheduleID",
       },
-      TenantName: {
-        type: Sequelize.STRING,
+      EmployeeID: {
+        type: Sequelize.INTEGER
       },
-      SubscriptionDetails: {
-        type: Sequelize.STRING,
+      ShiftTypeID: {
+        type: Sequelize.INTEGER
+      },
+      workdate: {
+        type: Sequelize.DATE
+      },
+      isScheduled: {
+        type: Sequelize.BOOLEAN
+      },
+      ChannelID: {
+        type: Sequelize.INTEGER
       },
       createdBy: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.INTEGER
       },
       updatedBy: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.INTEGER
       },
       createdAt: {
-        // type: Sequelize.DATE,
-        // allowNull: true,
         type: "TIMESTAMP",
         defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
-        allowNull: true,
+        allowNull: false,
       },
       updatedAt: {
         type: "TIMESTAMP",
         defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
-        allowNull: true,
-      },
+        allowNull: false,
+      }
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("Tenants");
-  },
+    await queryInterface.dropTable('WorkSchedules');
+  }
 };

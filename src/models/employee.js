@@ -12,6 +12,14 @@ module.exports = (sequelize, DataTypes) => {
       Employee.belongsTo(models.User, { foreignKey: "UserID" });
       Employee.belongsTo(models.Role, { foreignKey: "RoleID" });
       Employee.belongsTo(models.Account, { foreignKey: "AccountID" });
+      Employee.hasMany(models.Team, {
+        foreignKey: "ManagerID",
+        as: "managedTeams",
+      });
+      Employee.hasMany(models.Team, {
+        foreignKey: "MemberID",
+        as: "teamMembers",
+      });
     }
   }
   Employee.init(
