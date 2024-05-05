@@ -220,7 +220,72 @@ const rejectOT = asyncHandler(async(req,res)=>{
   }
 })
 
+// @desc get total overtime hour
+// @routes GET api/overtime/totalOvertimeHour
+// @access private
+
+const getTotalOvertimeHour = asyncHandler(async(req, res)=>{
+  try{
+    const roleID = req.RoleID;
+    const {startDate, endDate} = req.query;
+
+    if(roleID ===1){
+      const overtimeHour = await sequelize.query(`
+      select e.EmployeeID, CONCAT(u.firstName, ' ', u.lastName) AS fullname , hour(SEC_TO_TIME(SUM(TIME_TO_SEC(o.overtimeHour))))  as totalOvertimeHour
+      from employees as e
+      join overtimes as o on e.EmployeeID = o.EmployeeID
+      join users as u on u.UserID = e.UserID
+      join tenants as t on t.TenantID = e.TenantID
+      where o.Status = 'approved' AND o.OvertimeDate between :startDate and :endDate
+      GROUP BY e.EmployeeID
+      `,{
+        type: QueryTypes.SELECT,
+        replacements:{
+          startDate : startDate,
+            endDate: endDate
+        }
+      })
+      res.status(200).json({
+        errCode:0,
+        overtimeHour
+      })
+    }else{
+      const tenantName = req.TenantName;
+      const overtimeHour = await sequelize.query(`
+      select e.EmployeeID, CONCAT(u.firstName, ' ', u.lastName) AS fullname , hour(SEC_TO_TIME(SUM(TIME_TO_SEC(o.overtimeHour))))  as totalOvertimeHour
+from employees as e
+join overtimes as o on e.EmployeeID = o.EmployeeID
+join users as u on u.UserID = e.UserID
+join tenants as t on t.TenantID = e.TenantID
+where o.Status = 'approved' AND o.OvertimeDate between :startDate and :endDate and t.TenantName= :tenantName
+GROUP BY e.EmployeeID;
+      `,{
+        type: QueryTypes.SELECT,
+        replacements:{
+          startDate: startDate,
+          endDate: endDate,
+          tenantName: tenantName
+        }
+      })
+      res.status(200).json({
+        errCode: 200,
+        overtimeHour
+      })
+    }
+  }catch(e){
+    console.error(e)
+  }
+})
 
 
 
-export { createdOT, getAllOT, reviewRequest, deleteOT, pendingOT, approvedOT, rejectOT };
+
+export { createdOT, 
+  getAllOT, 
+  reviewRequest, 
+  deleteOT, 
+  pendingOT, 
+  approvedOT, 
+  rejectOT,
+  getTotalOvertimeHour
+ };
