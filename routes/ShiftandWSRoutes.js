@@ -23,7 +23,6 @@ router.post("/createdWSchedule", protect, createdWorkSchedule);
 router.get("/", protect, getAllShift);
 router.get("/workschedule", protect, getAllWSchedule);
 router.get("/workschedule/ontime", protect, onTime);
-router.get("/workschedule/totalWorkHour", protect, getTotalWorkHour)
 router.get("/workschedule/getTotalWorkHourWithAllFilter", protect, getTotalWorkHourWithAllFilter)
 router
   .route("/:id")

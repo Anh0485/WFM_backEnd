@@ -399,91 +399,22 @@ const onTime = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc get total working hours
-// @routes GET api/workschedule/ontime
-// @access private/ /superadminadmin/supervisor
-
-const getTotalWorkHour = asyncHandler(async (req, res) => {
-  try {
-    const roleID = req.RoleID;
-    const {startDate} = req.query;
-    const {endDate} = req.query;
-    if (roleID === 1) {
-      console.log(startDate, endDate);
-      const workHour = await sequelize.query(
-        `
-        select w.EmployeeID,CONCAT(u.firstName, ' ', u.lastName) AS fullname, c.ChannelName,
-        sum(Hour(TIMEDIFF(ShiftEnd, ShiftStart))) AS TOTALWORKINGHOURS
-        from workschedules as w
-        join employees as e on w.EmployeeID = e.EmployeeID
-        join shifts as s on w.ShiftTypeID = s.ShiftTypeID
-        join users as u on u.UserID = e.UserID
-        join tenants as t on t.TenantID = e.TenantID
-        join channels as c on c.ChannelID = w.ChannelID
-        WHERE w.workdate BETWEEN :startDate AND :endDate
-        GROUP BY w.EmployeeID;
-      `,
-        {
-          type: QueryTypes.SELECT,
-          replacements: {
-            startDate : startDate,
-            endDate: endDate
-          },
-        }
-      );
-      res.status(200).json({
-        errCode: 0,
-        workHour,
-      });
-    } else {
-      const tenantName = req.TenantName;
-      const workHour = await sequelize.query(
-        `
-      select w.EmployeeID,CONCAT(u.firstName, ' ', u.lastName) AS fullname, c.ChannelName,
-sum(Hour(TIMEDIFF(ShiftEnd, ShiftStart))) AS TOTALWORKINGHOURS
-from workschedules as w
-join employees as e on w.EmployeeID = e.EmployeeID
-join shifts as s on w.ShiftTypeID = s.ShiftTypeID
-join users as u on u.UserID = e.UserID
-join tenants as t on t.TenantID = e.TenantID
-join channels as c on c.ChannelID = w.ChannelID
-WHERE w.workdate BETWEEN :startDate AND :endDate and t.TenantName = :tenantName 
-GROUP BY w.EmployeeID
-      `,
-        {
-          type: QueryTypes.SELECT,
-          replacements: {
-            startDate : startDate,
-            endDate : endDate,
-            tenantName: tenantName,
-          },
-        }
-      );
-      res.status(200).json({
-        errCode: 0,
-        workHour,
-      });
-    }
-  } catch (e) {
-    console.error(e);
-  }
-});
 
 
 // @desc get total working hours by filter employee, startDate, endDate, ChannelD
 // @routes GET api/workschedule/totalWorkHour?EmployeeID=...&startDate=...&endDate=...&ChannelID=...
 // @access private/ /superadminadmin/supervisor
 
-const getTotalWorkHourWithAllFilter = asyncHandler(async(req,res)=>{
-  try{
-
-    const{ EmployeeID, startDate, endDate, ChannelID} = req.query;
+const getTotalWorkHourWithAllFilter = asyncHandler(async (req, res) => {
+  try {
+    const { EmployeeID, startDate, endDate, ChannelID } = req.query;
     const roleID = req.RoleID;
     const tenantName = req.TenantName;
 
-    if(roleID ===1 ){
-      console.log('employeeID', EmployeeID)
-      const totalNumberWorkHours = await sequelize.query(`
+    if (roleID === 1) {
+      console.log("employeeID", EmployeeID);
+      const totalNumberWorkHours = await sequelize.query(
+        `
       select w.EmployeeID,CONCAT(u.firstName, ' ', u.lastName) AS fullname, c.ChannelName,
       sum(Hour(TIMEDIFF(ShiftEnd, ShiftStart))) AS TOTALWORKINGHOURS
       from workschedules as w
@@ -494,21 +425,24 @@ const getTotalWorkHourWithAllFilter = asyncHandler(async(req,res)=>{
       join channels as c on c.ChannelID = w.ChannelID
       WHERE e.EmployeeID = :EmployeeID AND w.workdate BETWEEN :startDate AND :endDate AND c.ChannelID = :ChannelID
       GROUP BY w.EmployeeID
-      `,{
-        type: QueryTypes.SELECT,
-        replacements:{
-          EmployeeID: EmployeeID,
-          startDate: startDate,
-          endDate: endDate,
-          ChannelID: ChannelID
+      `,
+        {
+          type: QueryTypes.SELECT,
+          replacements: {
+            EmployeeID: EmployeeID,
+            startDate: startDate,
+            endDate: endDate,
+            ChannelID: ChannelID,
+          },
         }
-      });
+      );
       res.status(200).json({
-        errCode:0,
-        totalNumberWorkHours
-      })
-    } else{
-      const totalNumberWorkHours = await sequelize.query(`
+        errCode: 0,
+        totalNumberWorkHours,
+      });
+    } else {
+      const totalNumberWorkHours = await sequelize.query(
+        `
       select w.EmployeeID,CONCAT(u.firstName, ' ', u.lastName) AS fullname, c.ChannelName,
       sum(Hour(TIMEDIFF(ShiftEnd, ShiftStart))) AS TOTALWORKINGHOURS
       from workschedules as w
@@ -519,29 +453,27 @@ const getTotalWorkHourWithAllFilter = asyncHandler(async(req,res)=>{
       join channels as c on c.ChannelID = w.ChannelID
       WHERE e.EmployeeID = :EmployeeID AND w.workdate BETWEEN :startDate AND :endDate AND c.ChannelID = :ChannelID and t.TenantName = :tenantName
       GROUP BY w.EmployeeID
-      `,{
-        type: QueryTypes.SELECT,
-        replacements:{
-          EmployeeID: EmployeeID,
-          startDate: startDate,
-          endDate: endDate,
-          ChannelID: ChannelID,
-          tenantName:tenantName
+      `,
+        {
+          type: QueryTypes.SELECT,
+          replacements: {
+            EmployeeID: EmployeeID,
+            startDate: startDate,
+            endDate: endDate,
+            ChannelID: ChannelID,
+            tenantName: tenantName,
+          },
         }
-      })
+      );
       res.status(200).json({
         errCode: 0,
-        totalNumberWorkHours
-      })
-    
+        totalNumberWorkHours,
+      });
     }
-  
-    
-
-  }catch(e){
-    console.error(e)
+  } catch (e) {
+    console.error(e);
   }
-})
+});
 
 export {
   createdShift,
@@ -554,6 +486,5 @@ export {
   deleteWSchedule,
   getAllWSchedule,
   onTime,
-  getTotalWorkHour,
-  getTotalWorkHourWithAllFilter
+  getTotalWorkHourWithAllFilter,
 };
