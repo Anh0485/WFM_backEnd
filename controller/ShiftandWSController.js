@@ -436,9 +436,29 @@ const getTotalWorkHourWithAllFilter = asyncHandler(async (req, res) => {
           },
         }
       );
+      const overtimeHour = await sequelize.query(
+        `
+        select e.EmployeeID, CONCAT(u.firstName, ' ', u.lastName) AS fullname , hour(SEC_TO_TIME(SUM(TIME_TO_SEC(o.overtimeHour))))  as totalOvertimeHour
+        from employees as e
+        join overtimes as o on e.EmployeeID = o.EmployeeID
+        join users as u on u.UserID = e.UserID
+        join tenants as t on t.TenantID = e.TenantID
+        where o.Status = 'approved' AND o.OvertimeDate between :startDate and :endDate AND e.EmployeeID =  :EmployeeID
+        GROUP BY e.EmployeeID
+        `,
+        {
+          type: QueryTypes.SELECT,
+          replacements: {
+            startDate: startDate,
+            endDate: endDate,
+            EmployeeID: EmployeeID
+          },
+        }
+      );
       res.status(200).json({
         errCode: 0,
         totalNumberWorkHours,
+        overtimeHour
       });
     } else {
       const totalNumberWorkHours = await sequelize.query(
@@ -465,9 +485,28 @@ const getTotalWorkHourWithAllFilter = asyncHandler(async (req, res) => {
           },
         }
       );
+
+      const overtimeHour = await sequelize.query(`
+      select e.EmployeeID, CONCAT(u.firstName, ' ', u.lastName) AS fullname , hour(SEC_TO_TIME(SUM(TIME_TO_SEC(o.overtimeHour))))  as totalOvertimeHour
+        from employees as e
+        join overtimes as o on e.EmployeeID = o.EmployeeID
+        join users as u on u.UserID = e.UserID
+        join tenants as t on t.TenantID = e.TenantID
+        where o.Status = 'approved' AND o.OvertimeDate between :startDate and :endDate AND t.TenantName = :tenantName AND e.EmployeeID =  :EmployeeID
+        GROUP BY e.EmployeeID
+      `,{
+        type: QueryTypes.SELECT,
+        replacements:{
+          startDate: startDate,
+          endDate: endDate,
+          tenantName:tenantName,
+          EmployeeID: EmployeeID
+        }
+      })
       res.status(200).json({
         errCode: 0,
         totalNumberWorkHours,
+        overtimeHour
       });
     }
   } catch (e) {
