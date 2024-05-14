@@ -45,6 +45,15 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE,
       },
+      isDeleted : {
+        type: Sequelize.BOOLEAN
+      },
+      deleteBy:{
+        type: Sequelize.INTEGER,
+      },
+      deleteAt:{
+        type: Sequelize.DATE,
+      },
     });
   },
   async down(queryInterface, Sequelize) {

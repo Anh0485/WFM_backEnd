@@ -21,6 +21,7 @@ module.exports = {
       updatedBy: {
         type: Sequelize.INTEGER,
       },
+    
       createdAt: {
         type: "TIMESTAMP",
         defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
@@ -30,6 +31,15 @@ module.exports = {
         type: "TIMESTAMP",
         defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
         allowNull: false,
+      },
+      isDeleted : {
+        type: Sequelize.BOOLEAN
+      },
+      deleteBy:{
+        type: Sequelize.INTEGER,
+      },
+      deleteAt:{
+        type: Sequelize.DATE,
       },
     });
   },

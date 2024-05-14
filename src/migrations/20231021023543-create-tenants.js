@@ -34,6 +34,15 @@ module.exports = {
         defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
         allowNull: true,
       },
+      isDeleted : {
+        type: Sequelize.BOOLEAN
+      },
+      deleteBy:{
+        type: Sequelize.INTEGER,
+      },
+      deleteAt:{
+        type: Sequelize.DATE,
+      },
     });
   },
   async down(queryInterface, Sequelize) {

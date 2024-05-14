@@ -41,11 +41,12 @@ const getAllTenants = asyncHandler(async (req, res) => {
   try {
     const getTenants = await sequelize.query(
       `SELECT t.TenantID, t.TenantName, t.SubscriptionDetails,  DATE_FORMAT(t.createdAt, '%d-%m-%Y') AS createdAt,
-    CONCAT(u.FirstName, ' ', u.LastName) AS createdBy
-FROM tenants AS t
-JOIN accounts AS a ON t.createdBy = a.AccountID
-JOIN employees as e on e.AccountID = a.AccountID
-JOIN users AS u ON e.UserID = u.UserID`,
+      CONCAT(u.FirstName, ' ', u.LastName) AS createdBy
+  FROM tenants AS t
+  JOIN accounts AS a ON t.createdBy = a.AccountID
+  JOIN employees as e on e.AccountID = a.AccountID
+  JOIN users AS u ON e.UserID = u.UserID
+  WHERE t.isDeleted = 0`,
       {
         type: QueryTypes.SELECTS,
       }
@@ -64,25 +65,61 @@ JOIN users AS u ON e.UserID = u.UserID`,
 // @access private/ superadmin
 
 const deleteTenants = asyncHandler(async (req, res) => {
-  try {
-    const tenantID = req.params.id;
-    const tenant = await db.Tenants.findOne({
-      attributes: ["TenantID", "TenantName"],
-      where: {
-        TenantID: tenantID,
-      },
-    });
-    if (!tenant) {
-      res.status(200).json({ message: "Tenant isn't exits" });
-    } else {
-      await db.Tenants.destroy({
-        where: { tenantID },
-      });
+  // try {
+  //   const tenantID = req.params.id;
+  //   const tenant = await db.Tenants.findOne({
+  //     attributes: ["TenantID", "TenantName"],
+  //     where: {
+  //       TenantID: tenantID,
+  //     },
+  //   });
+  //   if (!tenant) {
+  //     res.status(200).json({ message: "Tenant isn't exits" });
+  //   } else {
+  //     await db.Tenants.destroy({
+  //       where: { tenantID },
+  //     });
 
-      res.status(200).json({ message: "Delete tenant successfully" });
+  //     res.status(200).json({ message: "Delete tenant successfully" });
+  //   }
+  // } catch (e) {
+  //   console.log(`Error by: ${e}`);
+  // }
+  try{
+    const tenantID = req.params.id;
+    const tenant = await sequelize.query(`
+    select TenantID, TenantName
+from tenants
+where tenants.TenantID = :tenantID;
+    `,{
+      type: QueryTypes.SELECT,
+      replacements:{
+        tenantID: tenantID
+      }
+    })
+    console.log('tenant', tenant[0]);
+    if(!tenant[0]){
+      res.status(200).json({
+        errCode:1,
+        message: ' Tenant is not exist'
+      })
+    }else{
+      await sequelize.query(`
+      UPDATE tenants
+      SET isDeleted = 1, deleteBy = 14, deleteAt = curdate()
+      WHERE TenantID = 86
+      `,{
+        type: QueryTypes.UPDATE,
+        replacements:{
+        }
+      })
+      res.status(200).json({
+        errCode: 0,
+        message: 'delete tenant is successfully'
+      })
     }
-  } catch (e) {
-    console.log(`Error by: ${e}`);
+  }catch(e){
+    console.error(e)
   }
 });
 

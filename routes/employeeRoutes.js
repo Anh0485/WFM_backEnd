@@ -21,7 +21,7 @@ router
   .route("/:id")
   .get(getEmployeeProfileByID)
   .put(updateInforEmployee)
-  .delete(deleteEmployee);
+  .delete(protect,deleteEmployee);
 
 router.route("/").get(protect, getAllEmployee);
 // .get(getAllEmployee);

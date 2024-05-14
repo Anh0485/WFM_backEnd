@@ -13,7 +13,8 @@ const createdShift = asyncHandler(async (req, res) => {
     const createdBy = req.createdBy;
 
     const createShift = await sequelize.query(
-      "INSERT INTO shifts (ShiftTypeName, ShiftStart, ShiftEnd, createdBy) VALUES (:ShiftTypeName, :ShiftStart, :ShiftEnd, :createdBy)",
+      `INSERT INTO shifts (ShiftTypeName, ShiftStart, ShiftEnd, createdBy, isDeleted) 
+      VALUES (:ShiftTypeName, :ShiftStart, :ShiftEnd, :createdBy, 0)`,
       {
         replacements: {
           ShiftTypeName,
@@ -79,27 +80,70 @@ const updatedShift = asyncHandler(async (req, res) => {
 
 const deletedShift = asyncHandler(async (req, res) => {
   const id = req.params.id;
-  try {
-    const shift = await db.Shift.findOne({
-      attributes: ["ShiftTypeID"],
-      where: {
-        ShiftTypeID: id,
-      },
-    });
-    console.log("shift:", shift);
-    if (shift) {
-      await db.Shift.destroy({
-        where: { ShiftTypeID: shift.ShiftTypeID },
-      });
+  // try {
+  //   const shift = await db.Shift.findOne({
+  //     attributes: ["ShiftTypeID"],
+  //     where: {
+  //       ShiftTypeID: id,
+  //     },
+  //   });
+  //   console.log("shift:", shift);
+  //   if (shift) {
+  //     await db.Shift.destroy({
+  //       where: { ShiftTypeID: shift.ShiftTypeID },
+  //     });
 
+  //     res.status(200).json({
+  //       message: "Delete shift successfully",
+  //     });
+  //   } else {
+  //     res.status(200).json({ message: "Shift isn't exist" });
+  //   }
+  // } catch (e) {
+  //   console.log(`Error by: ${e}`);
+  // }
+  try {
+    const deleteBy = req.createdBy;
+    const shift = await sequelize.query(
+      `
+    select ShiftTypeID
+from shifts
+where ShiftTypeID = :id
+    `,
+      {
+        type: QueryTypes.SELECT,
+        replacements: {
+          id: id,
+        },
+      }
+    );
+    if (!shift[0]) {
       res.status(200).json({
-        message: "Delete shift successfully",
+        errCode: 1,
+        message: "Shift is not exist",
       });
     } else {
-      res.status(200).json({ message: "Shift isn't exist" });
+      await sequelize.query(
+        `
+      UPDATE shifts
+      SET isDeleted = 1 , deleteBy = :deleteBy, deleteAt = curdate()
+      WHERE ShiftTypeID = :id
+      `,
+        {
+          type: QueryTypes.UPDATE,
+          replacements: {
+            deleteBy: deleteBy,
+            id: id,
+          },
+        }
+      );
+      res.status(200).json({
+        errCode: 0,
+        mesasge: "Delete shift is successfully",
+      });
     }
   } catch (e) {
-    console.log(`Error by: ${e}`);
+    console.error(e);
   }
 });
 
@@ -123,11 +167,12 @@ const getAllShift = asyncHandler(async (req, res) => {
 
     const allShift = await sequelize.query(
       `SELECT s.ShiftTypeID, s.ShiftTypeName, s.ShiftStart, s.ShiftEnd, DATE_FORMAT(s.createdAt, '%d-%m-%Y') AS createdAt,
-    CONCAT(u.FirstName, ' ', u.LastName) AS createdBy
-FROM shifts AS s
-JOIN accounts AS a ON s.createdBy = a.AccountID
-JOIN employees as e on e.AccountID = a.AccountID
-JOIN users AS u ON e.UserID = u.UserID`,
+      CONCAT(u.FirstName, ' ', u.LastName) AS createdBy
+  FROM shifts AS s
+  JOIN accounts AS a ON s.createdBy = a.AccountID
+  JOIN employees as e on e.AccountID = a.AccountID
+  JOIN users AS u ON e.UserID = u.UserID
+  WHERE s.isDeleted = 0`,
       {
         type: QueryTypes.SELECT,
       }
@@ -172,18 +217,23 @@ const createdWorkSchedule = asyncHandler(async (req, res) => {
     const { EmployeeID, ShiftTypeID, WorkDate, isScheduled, ChannelID } =
       req.body;
     const createdBy = req.createdBy;
+    const isDeleted = 0;
 
     const checkScheduleByEmployeeID = await sequelize.query(
       `SELECT Count(*) 
       FROM workschedules 
       WHERE workdate= :WorkDate
       AND ShiftTypeID = :ShiftTypeID 
-      AND EmployeeID = :EmployeeID`,
+      AND EmployeeID = :EmployeeID
+      AND ChannelID = :ChannelID
+      AND isDeleted = 0
+      `,
       {
         replacements: {
           WorkDate: WorkDate,
           ShiftTypeID: ShiftTypeID,
           EmployeeID: EmployeeID,
+          ChannelID: ChannelID
         },
         type: QueryTypes.SELECT,
       }
@@ -194,20 +244,37 @@ const createdWorkSchedule = asyncHandler(async (req, res) => {
     console.log(count);
 
     if (count === 0) {
-      const createdworkSchedule = await db.WorkSchedule.create({
-        EmployeeID: EmployeeID,
-        ShiftTypeID: ShiftTypeID,
-        workdate: WorkDate,
-        isScheduled: isScheduled,
-        createdBy: createdBy,
-        ChannelID: ChannelID,
-      });
+      // const createdworkSchedule = await db.WorkSchedule.create({
+      //   EmployeeID: EmployeeID,
+      //   ShiftTypeID: ShiftTypeID,
+      //   workdate: WorkDate,
+      //   isScheduled: isScheduled,
+      //   createdBy: createdBy,
+      //   ChannelID: ChannelID,
+      //   isDeleted: isDeleted,
+      // });
+      const workschedule = await sequelize.query(`
+      INSERT INTO workschedules (EmployeeID, ShiftTypeID, workdate, isScheduled, ChannelID, createdBy, isDeleted)
+      VALUES (:EmployeeID, :ShiftTypeID, :workdate, :isScheduled, :ChannelID ,:createdBy, :isDeleted)
+      `,{
+        type: QueryTypes.INSERT,
+        replacements:{
+          EmployeeID: EmployeeID,
+          ShiftTypeID: ShiftTypeID,
+          workdate : WorkDate,
+          isScheduled: isScheduled,
+          ChannelID: ChannelID,
+          createdBy: createdBy,
+          isDeleted : isDeleted
+        }
+      })
       res.status(200).json({
         message: "create schedule successfully",
-        createdworkSchedule,
+        workschedule,
       });
     } else {
-      res.json({
+      res.status(200).json({
+        errCode:1,
         message: "schedule already exists.",
       });
     }
@@ -271,29 +338,69 @@ const updateWSchedule = asyncHandler(async (req, res) => {
 // @access private/ superadmin
 
 const deleteWSchedule = asyncHandler(async (req, res) => {
+  // try {
+  //   const id = req.params.id;
+  //   const wschedule = await db.WorkSchedule.findOne({
+  //     attributes: ["ScheduleID"],
+  //     where: {
+  //       ScheduleID: id,
+  //     },
+  //   });
+
+  //   console.log(wschedule);
+
+  //   if (!wschedule) {
+  //     res.status(200).json({
+  //       message: "WSchedule isn't exits",
+  //     });
+  //   } else {
+  //     await db.WorkSchedule.destroy({
+  //       where: {
+  //         ScheduleID: wschedule.ScheduleID,
+  //       },
+  //     });
+  //   }
+  //   res.status(200).json({ message: "Delete wschedule successfully" });
+  // } catch (e) {
+  //   console.error(e);
+  // }
   try {
     const id = req.params.id;
-    const wschedule = await db.WorkSchedule.findOne({
-      attributes: ["ScheduleID"],
-      where: {
-        ScheduleID: id,
-      },
-    });
-
-    console.log(wschedule);
-
-    if (!wschedule) {
-      res.status(200).json({
-        message: "WSchedule isn't exits",
-      });
-    } else {
-      await db.WorkSchedule.destroy({
-        where: {
-          ScheduleID: wschedule.ScheduleID,
+    const schedule = await sequelize.query(
+      `
+    SELECT ScheduleID
+FROM workschedules
+WHERE ScheduleID = :id
+    `,
+      {
+        type: QueryTypes.SELECT,
+        replacements: {
+          id: id,
         },
-      });
+      }
+    );
+    if(!schedule[0]){
+      res.status(200).json({
+        errCode: 1,
+        message: 'Schedule isnot exist'
+      })
+    }else{
+      const deleteBy = req.createdBy;
+      await sequelize.query(`
+      UPDATE workschedules
+SET isDeleted = 1, deleteBy = :deleteBy, deleteAt = curdate()
+WHERE ScheduleID = :id
+      `,{
+        replacements:{
+          id: id,
+          deleteBy : deleteBy
+        }
+      })
+      res.status(200).json({
+        errCode: 0,
+        message:'Delete workschedule is successfully'
+      })
     }
-    res.status(200).json({ message: "Delete wschedule successfully" });
   } catch (e) {
     console.error(e);
   }
@@ -318,7 +425,8 @@ const getAllWSchedule = asyncHandler(async (req, res) => {
             JOIN shifts AS s ON s.ShiftTypeID = w.ShiftTypeID
             JOIN employees AS e2 ON w.createdBy = e2.AccountID
             JOIN users AS u2 ON e2.UserID = u2.UserID
-            jOIN channels AS c on w.ChannelID = c.ChannelID`,
+            jOIN channels AS c on w.ChannelID = c.ChannelID
+            WHERE w.isDeleted = 0`,
         {
           type: QueryTypes.SELECT,
         }
@@ -342,7 +450,7 @@ const getAllWSchedule = asyncHandler(async (req, res) => {
             JOIN users AS u2 ON e2.UserID = u2.UserID
             jOIN channels AS c on w.ChannelID = c.ChannelID
             join tenants as t on t.TenantID = e.TenantID
-            WHERE t.TenantName = :tenantName`,
+            WHERE t.TenantName = :tenantName AND  w.isDeleted = 0`,
         {
           type: QueryTypes.SELECT,
           replacements: {
@@ -380,7 +488,7 @@ const onTime = asyncHandler(async (req, res) => {
       `
     SELECT COUNT(*) AS total_ontime
 		from workschedules as w
-        where w.workdate = :date;
+        where w.workdate = :date and isDeleted = 0;
     `,
       {
         replacements: {
@@ -398,8 +506,6 @@ const onTime = asyncHandler(async (req, res) => {
     console.error(e);
   }
 });
-
-
 
 // @desc get total working hours by filter employee, startDate, endDate, ChannelD
 // @routes GET api/workschedule/totalWorkHour?EmployeeID=...&startDate=...&endDate=...&ChannelID=...
@@ -451,14 +557,14 @@ const getTotalWorkHourWithAllFilter = asyncHandler(async (req, res) => {
           replacements: {
             startDate: startDate,
             endDate: endDate,
-            EmployeeID: EmployeeID
+            EmployeeID: EmployeeID,
           },
         }
       );
       res.status(200).json({
         errCode: 0,
         totalNumberWorkHours,
-        overtimeHour
+        overtimeHour,
       });
     } else {
       const totalNumberWorkHours = await sequelize.query(
@@ -486,7 +592,8 @@ const getTotalWorkHourWithAllFilter = asyncHandler(async (req, res) => {
         }
       );
 
-      const overtimeHour = await sequelize.query(`
+      const overtimeHour = await sequelize.query(
+        `
       select e.EmployeeID, CONCAT(u.firstName, ' ', u.lastName) AS fullname , hour(SEC_TO_TIME(SUM(TIME_TO_SEC(o.overtimeHour))))  as totalOvertimeHour
         from employees as e
         join overtimes as o on e.EmployeeID = o.EmployeeID
@@ -494,19 +601,21 @@ const getTotalWorkHourWithAllFilter = asyncHandler(async (req, res) => {
         join tenants as t on t.TenantID = e.TenantID
         where o.Status = 'approved' AND o.OvertimeDate between :startDate and :endDate AND t.TenantName = :tenantName AND e.EmployeeID =  :EmployeeID
         GROUP BY e.EmployeeID
-      `,{
-        type: QueryTypes.SELECT,
-        replacements:{
-          startDate: startDate,
-          endDate: endDate,
-          tenantName:tenantName,
-          EmployeeID: EmployeeID
+      `,
+        {
+          type: QueryTypes.SELECT,
+          replacements: {
+            startDate: startDate,
+            endDate: endDate,
+            tenantName: tenantName,
+            EmployeeID: EmployeeID,
+          },
         }
-      })
+      );
       res.status(200).json({
         errCode: 0,
         totalNumberWorkHours,
-        overtimeHour
+        overtimeHour,
       });
     }
   } catch (e) {

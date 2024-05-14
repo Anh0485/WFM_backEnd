@@ -196,41 +196,87 @@ const updateInforEmployee = asyncHandler(async (req, res) => {
 
 const deleteEmployee = asyncHandler(async (req, res) => {
   const EmployeeID = req.params.id;
-  console.log(EmployeeID);
   try {
-    const employee = await db.Employee.findOne({
-      attributes: ["EmployeeID", "AccountID", "UserID"],
-      where: {
-        EmployeeID: EmployeeID,
-      },
-    });
-    console.log(employee);
-    if (!employee) {
-      res.status(200).json({ message: "Employee isn't exist" });
-    } else {
-      await db.Employee.destroy({
-        where: { EmployeeID },
-      });
-
-      await db.Account.destroy({
-        where: {
-          AccountID: employee.AccountID,
+    const deletedBy = req.createdBy;
+    console.log('deletedBy', deletedBy)
+    const employee = await sequelize.query(
+      `
+    select e.EmployeeID, concat(u.FirstName, '', u.LastName) as fullname, a.AccountID
+    from employees as e
+join accounts as a on a.AccountID = e.AccountID
+join users as u on u.UserID = e.UserID
+where e.EmployeeID =  :EmployeeID
+    `,
+      {
+        type: QueryTypes.SELECT,
+        replacements: {
+          EmployeeID: EmployeeID,
         },
-      });
-
-      await db.User.destroy({
-        where: {
-          UserID: employee.UserID,
-        },
-      });
-
+      }
+    );
+    if (!employee[0]) {
       res.status(200).json({
-        message: "Delete employee successfully",
+        errCode: 1,
+        message: "Employee is not exist",
       });
+    } else {
+      console.log("employee", employee[0]);
+      const deleteEmployee = await sequelize.query(
+        `
+      UPDATE employees as e 
+JOIN users as u ON e.UserID = u.UserID
+JOIN accounts as a ON a.AccountID = e.AccountID
+SET e.isDeleted = 1, e.deleteBy = :deletedBy, e.deleteAt = CURDATE()
+WHERE e.EmployeeID = :EmployeeID
+      `,
+        {
+          type: QueryTypes.UPDATE,
+          replacements: {
+            EmployeeID: EmployeeID,
+            deletedBy: deletedBy,
+          },
+        }
+      );
+      res.status(200).json({errCode: 0,message:'delete employee is successfully'});
     }
   } catch (e) {
-    console.log(`Error by: ${e}`);
+    console.error(e);
   }
+
+  // try {
+  //   const employee = await db.Employee.findOne({
+  //     attributes: ["EmployeeID", "AccountID", "UserID"],
+  //     where: {
+  //       EmployeeID: EmployeeID,
+  //     },
+  //   });
+  //   console.log(employee);
+  //   if (!employee) {
+  //     res.status(200).json({ message: "Employee isn't exist" });
+  //   } else {
+  //     await db.Employee.destroy({
+  //       where: { EmployeeID },
+  //     });
+
+  //     await db.Account.destroy({
+  //       where: {
+  //         AccountID: employee.AccountID,
+  //       },
+  //     });
+
+  //     await db.User.destroy({
+  //       where: {
+  //         UserID: employee.UserID,
+  //       },
+  //     });
+
+  //     res.status(200).json({
+  //       message: "Delete employee successfully",
+  //     });
+  //   }
+  // } catch (e) {
+  //   console.log(`Error by: ${e}`);
+  // }
 });
 
 //// @desc search employee
@@ -325,7 +371,8 @@ const getEmployeeByTenant = asyncHandler(async (req, res) => {
         users.Email, users.Birthday, users.Gender, users.address, users.PhoneNumber 
         FROM employees as e 
         JOIN users ON e.UserID = users.UserID
-        JOIN roles as r on r.RoleID = e.RoleID`,
+        JOIN roles as r on r.RoleID = e.RoleID
+        WHERE e.isDeleted = 0`,
         {
           type: QueryTypes.SELECT,
         }
@@ -341,7 +388,7 @@ const getEmployeeByTenant = asyncHandler(async (req, res) => {
       JOIN users ON e.UserID = users.UserID
       JOIN roles as r on r.RoleID = e.RoleID
       JOIN tenants as t on e.TenantID = t.TenantID
-      where t.TenantName = :TenantName`,
+      where t.TenantName = :TenantName and e.isDeleted = 0`,
         {
           type: QueryTypes.SELECT,
           replacements: {
@@ -350,27 +397,24 @@ const getEmployeeByTenant = asyncHandler(async (req, res) => {
         }
       );
 
-      res.status(200).json(
-        employee
-      );
-    } 
+      res.status(200).json(employee);
+    }
   } catch (e) {
     console.error(e);
   }
 });
 
-
 //// @desc get employee by supervisor
 // @routes GET /api/agent
 // @access private
 
-
-const getAgent = asyncHandler(async(req,res)=>{
-  try{
+const getAgent = asyncHandler(async (req, res) => {
+  try {
     const TenantName = req.TenantName;
     const roleid = req.RoleID;
-    if(roleid === 1){
-      const agent = await sequelize.query(`
+    if (roleid === 1) {
+      const agent = await sequelize.query(
+        `
       select e.EmployeeID,
         CONCAT(users.LastName, ' ', users.FirstName) AS FullName, users.FirstName, users.LastName, r.RoleName, t.TenantName,
         users.Email, users.Birthday, users.Gender, users.address, users.PhoneNumber 
@@ -379,14 +423,16 @@ const getAgent = asyncHandler(async(req,res)=>{
         JOIN roles as r on r.RoleID = e.RoleID
         JOIN tenants as t on e.TenantID = t.TenantID
       `,
-      {
-        type: QueryTypes.SELECT,
-      })
+        {
+          type: QueryTypes.SELECT,
+        }
+      );
       res.status(200).json({
-        agent
-      })
-    }else{
-      const agent = await sequelize.query(`
+        agent,
+      });
+    } else {
+      const agent = await sequelize.query(
+        `
       select e.EmployeeID,
         CONCAT(users.LastName, ' ', users.FirstName) AS FullName, users.FirstName, users.LastName, r.RoleName, t.TenantName,
         users.Email, users.Birthday, users.Gender, users.address, users.PhoneNumber 
@@ -396,21 +442,21 @@ const getAgent = asyncHandler(async(req,res)=>{
         JOIN tenants as t on e.TenantID = t.TenantID
         where t.TenantName = :TenantName AND r.RoleName = 'Agent'
       `,
-      {
-        type: QueryTypes.SELECT,
-        replacements: {
-          TenantName: TenantName,
-        },
-      })
+        {
+          type: QueryTypes.SELECT,
+          replacements: {
+            TenantName: TenantName,
+          },
+        }
+      );
       res.status(200).json({
-        agent
-      })
+        agent,
+      });
     }
-    
-  }catch(e){
-    console.error(e)
+  } catch (e) {
+    console.error(e);
   }
-})
+});
 
 export {
   addEmployee,
@@ -421,5 +467,5 @@ export {
   getAllEmployee,
   getAllRole,
   getEmployeeByTenant,
-  getAgent
+  getAgent,
 };

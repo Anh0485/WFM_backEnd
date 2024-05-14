@@ -2,7 +2,7 @@
   "development": {
     "username": "root",
     "password": "123",
-    "database": "wfm_project_02",
+    "database": "wfm_project_03",
     "host":"localhost",
     "dialect": "mysql",
    
