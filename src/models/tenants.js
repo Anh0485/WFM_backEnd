@@ -17,6 +17,7 @@ module.exports = (sequelize, DataTypes) => {
       SubscriptionDetails: DataTypes.STRING,
       createdBy: DataTypes.INTEGER,
       updatedBy: DataTypes.INTEGER,
+      isDeleted: DataTypes.BOOLEAN
       // createdAt: {
       //   type: DataTypes.DATE,
       //   allowNull: true,

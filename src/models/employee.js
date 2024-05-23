@@ -31,6 +31,7 @@ module.exports = (sequelize, DataTypes) => {
       updatedBy: DataTypes.INTEGER,
       UserID: DataTypes.INTEGER,
       AccountID: DataTypes.INTEGER,
+      isDeleted: DataTypes.BOOLEAN
     },
     {
       sequelize,

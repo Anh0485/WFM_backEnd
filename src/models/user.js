@@ -23,6 +23,7 @@ module.exports = (sequelize, DataTypes) => {
       updatedBy: DataTypes.INTEGER,
       Address: DataTypes.STRING,
       Gender: DataTypes.BOOLEAN,
+      isDeleted: DataTypes.BOOLEAN
     },
     {
       sequelize,

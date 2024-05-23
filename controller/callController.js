@@ -40,4 +40,56 @@ const getCallandAgentByTime = asyncHandler(async (req, res) => {
   }
 });
 
-export{ getCallandAgentByTime}
+// @desc get call and agent by week
+// @routes GET/callandagent/getCallAndAgentByWeek
+// @access private
+
+const getCallAndAgentByWeek = asyncHandler(async(req,res)=>{
+  try{
+    const now = new Date();
+    const formattedDate = now.toISOString().split('T')[0];
+    const callAndAgent = await sequelize.query(`
+    SELECT
+    CASE DAYOFWEEK(CallDate)
+        WHEN 1 THEN 'Sunday'
+        WHEN 2 THEN 'Monday'
+        WHEN 3 THEN 'Tuesday' 
+        WHEN 4 THEN 'Wednesday'
+        WHEN 5 THEN 'Thursday'
+        WHEN 6 THEN 'Friday'
+        WHEN 7 THEN 'Saturday'
+    END AS DayOfWeek,
+    COUNT(*) AS TotalCalls,
+    COUNT(DISTINCT EmployeeID) AS TotalAgents
+FROM
+    calls
+WHERE
+    CallDate BETWEEN DATE_SUB(:formattedDate, 
+      INTERVAL (WEEKDAY(:formattedDate) + 7) DAY) 
+      AND DATE_SUB(:formattedDate, 
+        INTERVAL (WEEKDAY(:formattedDate) + 1) DAY)
+GROUP BY
+    DAYOFWEEK(CallDate)
+ORDER BY
+    CASE
+        WHEN DAYOFWEEK(CallDate) = 1 THEN 7 
+        ELSE DAYOFWEEK(CallDate) - 1
+    END;
+    `,{
+      type: QueryTypes.SELECT,
+      replacements:{
+        formattedDate: formattedDate
+      }
+    });
+    console.log('date:', formattedDate);
+    res.status(200).json({
+      errCode:0,
+      callAndAgent
+    })
+  }catch(e){
+    console.error(e)
+  }
+})
+
+
+export{ getCallandAgentByTime, getCallAndAgentByWeek}

@@ -1,8 +1,8 @@
 import express from "express";
 import { protect } from "../middleware/authMiddleware";
-import { getCallandAgentByTime } from "../controller/callController";
+import { getCallAndAgentByWeek, getCallandAgentByTime } from "../controller/callController";
 const router = express.Router();
 
 router.get('/getAllCallandAgent', getCallandAgentByTime);
-
-export default router;
+router.get('/getCallAndAgentByWeek', protect, getCallAndAgentByWeek)
+export default router;  

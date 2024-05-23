@@ -24,9 +24,13 @@ const addEmployee = asyncHandler(async (req, res) => {
 
   try {
     const user = await db.User.findOne({
-      attributes: ["UserID", "Email"],
-      where: { Email: Email },
+      attributes: ["UserID", "Email",],
+      where: { 
+        Email: Email,
+        isDeleted: 0
+       },
     });
+    console.log('email', user)
     if (user) {
       res.status(200).json({ errCode: -1, message: "Email exist in system" });
     } else {
@@ -38,7 +42,9 @@ const addEmployee = asyncHandler(async (req, res) => {
         Address: address,
         PhoneNumber: PhoneNumber,
         Gender: Gender,
+        isDeleted: 0
       });
+      console.log('UserID')
       const userID = addInforUser.id;
       //created Account
       const salt = genSaltSync(10);
@@ -48,6 +54,7 @@ const addEmployee = asyncHandler(async (req, res) => {
         attributes: ["username"],
         where: {
           username: username,
+          isDeleted: 0
         },
       });
 
@@ -60,6 +67,7 @@ const addEmployee = asyncHandler(async (req, res) => {
           username: username,
           password: hashPassword,
           RoleID: RoleID,
+          isDeleted: 0
         });
 
         //created EmployeeID
@@ -74,6 +82,7 @@ const addEmployee = asyncHandler(async (req, res) => {
           Status: "Active",
           UserID: userID,
           AccountID: accountID,
+          isDeleted: 0
         });
 
         res.status(200).json({
@@ -87,15 +96,17 @@ const addEmployee = asyncHandler(async (req, res) => {
           .status(200)
           .json({ errCode: -1, message: "username exits in system" });
       }
-      res.status(200).json({
-        errCode: 0,
-        message: "Add employee success",
-      });
+      // res.status(200).json({
+      //   errCode: 0,
+      //   message: "Add employee success",
+      // });
     }
   } catch (e) {
     console.log(`Error by: ${e}`);
   }
 });
+
+
 
 // @desc get employee profile
 // @routes POST /api/superadmin/employee/profile
@@ -223,11 +234,13 @@ where e.EmployeeID =  :EmployeeID
       console.log("employee", employee[0]);
       const deleteEmployee = await sequelize.query(
         `
-      UPDATE employees as e 
-JOIN users as u ON e.UserID = u.UserID
-JOIN accounts as a ON a.AccountID = e.AccountID
-SET e.isDeleted = 1, e.deleteBy = :deletedBy, e.deleteAt = CURDATE()
-WHERE e.EmployeeID = :EmployeeID
+        UPDATE employees as e 
+        JOIN users as u ON e.UserID = u.UserID
+        JOIN accounts as a ON a.AccountID = e.AccountID
+        SET e.isDeleted = 1, e.deleteBy = :deletedBy, e.deleteAt = CURDATE(), 
+        u.isDeleted = 1, u.deleteBy = :deletedBy, u.deleteAt = CURDATE(), 
+        a.isDeleted = 1, a.deleteBy = :deletedBy, a.deleteAt = CURDATE()
+        WHERE e.EmployeeID = :EmployeeID
       `,
         {
           type: QueryTypes.UPDATE,
@@ -415,13 +428,15 @@ const getAgent = asyncHandler(async (req, res) => {
     if (roleid === 1) {
       const agent = await sequelize.query(
         `
-      select e.EmployeeID,
-        CONCAT(users.LastName, ' ', users.FirstName) AS FullName, users.FirstName, users.LastName, r.RoleName, t.TenantName,
-        users.Email, users.Birthday, users.Gender, users.address, users.PhoneNumber 
+        select e.EmployeeID,
+        CONCAT(u.LastName, ' ', u.FirstName) AS FullName, u.FirstName, u.LastName, r.RoleName, t.TenantName,
+        u.Email, u.Birthday, u.Gender, u.address, u.PhoneNumber, e.isDeleted, u.isDeleted 
         FROM employees as e 
-        JOIN users ON e.UserID = users.UserID
+        JOIN users as u ON e.UserID = u.UserID
         JOIN roles as r on r.RoleID = e.RoleID
         JOIN tenants as t on e.TenantID = t.TenantID
+        WHERE r.RoleID = 4 
+		    AND e.isDeleted =0 and u.isDeleted = 0
       `,
         {
           type: QueryTypes.SELECT,
@@ -441,6 +456,7 @@ const getAgent = asyncHandler(async (req, res) => {
         JOIN roles as r on r.RoleID = e.RoleID
         JOIN tenants as t on e.TenantID = t.TenantID
         where t.TenantName = :TenantName AND r.RoleName = 'Agent'
+        and users.isDeleted = 0 and e.isDeleted = 0
       `,
         {
           type: QueryTypes.SELECT,

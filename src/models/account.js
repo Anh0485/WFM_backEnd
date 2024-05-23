@@ -22,7 +22,8 @@ module.exports = (sequelize, DataTypes) => {
     IsLoggedIn: DataTypes.BOOLEAN,
     RoleID: DataTypes.INTEGER,
     createdBy: DataTypes.INTEGER,
-    updatedBy: DataTypes.INTEGER
+    updatedBy: DataTypes.INTEGER,
+    isDeleted: DataTypes.BOOLEAN
   }, {
     sequelize,
     modelName: 'Account',

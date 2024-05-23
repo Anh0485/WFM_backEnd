@@ -111,4 +111,65 @@ const getPermissionSub = asyncHandler(async(req,res)=>{
   }
 })
 
-export { getAllModule, getModuleName, getPermissionSub };
+// @desc get profile user at permission
+// @routes GET api/module/accountProfile
+// @access private
+
+const getProfileAccount = asyncHandler(async(req,res)=>{
+  try{
+    const user = await sequelize.query(`
+    select a.AccountID, concat(u.LastName,' ', u.FirstName) as FullName, a.username, r.RoleName, t.TenantName
+    from employees as e
+    join tenants as t on t.TenantID = e.TenantID
+    join users as u on e.UserID = u.UserID
+    join accounts as a on a.AccountID = e.AccountID
+    join roles as r on r.RoleID = e.RoleID;
+    `,{
+      type: QueryTypes.SELECT,
+    });
+    
+    res.status(200).json({
+      errCode: 0,
+      user
+    })
+  }catch(e){
+    console.error(e)
+  }
+})
+
+// @desc get module and permission by AccountID
+// @routes GET api/module/moduleAndPermissionByID
+// @access private
+
+const getModuleAndPermission = asyncHandler(async(req,res)=>{
+  try{
+    const {AccountID} = req.query;
+    const moduleAndPermission = await sequelize.query(`
+    SELECT permissions.PermissionID,modules.ModuleName, permissiondetails.CanAdd, permissiondetails.CanView, permissiondetails.CanEdit, permissiondetails.CanDelete, permissiondetails.CanExport
+    FROM accounts
+    JOIN permissions ON accounts.AccountID = permissions.AccountID
+    JOIN permissiondetails ON permissiondetails.PermissionID = permissions.PermissionID
+    JOIN modules ON permissiondetails.ModuleID = modules.ModuleID
+    where accounts.AccountID = :AccountID`,{
+      type: QueryTypes.SELECT,
+      replacements:{
+        AccountID: AccountID
+      }
+    })
+    res.status(200).json({
+      errCode: 0,
+      moduleAndPermission
+    })
+
+  }catch(e){
+    console.error(e)
+  }
+})
+
+
+export { getAllModule, 
+  getModuleName, 
+  getPermissionSub, 
+  getProfileAccount,
+  getModuleAndPermission
+ };

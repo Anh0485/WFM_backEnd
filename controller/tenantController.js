@@ -19,6 +19,7 @@ const createdTenant = asyncHandler(async (req, res) => {
       TenantName: TenantName,
       SubscriptionDetails: SubscriptionDetails,
       createdBy: createdBy,
+      isDeleted: 0
       // createdAt: formatedDate,
     });
 
@@ -107,10 +108,11 @@ where tenants.TenantID = :tenantID;
       await sequelize.query(`
       UPDATE tenants
       SET isDeleted = 1, deleteBy = 14, deleteAt = curdate()
-      WHERE TenantID = 86
+      WHERE TenantID = :tenantID
       `,{
         type: QueryTypes.UPDATE,
         replacements:{
+          tenantID: tenantID
         }
       })
       res.status(200).json({
