@@ -8,6 +8,7 @@ import {
   changePassword,
   addAccount,
   getAllRole,
+  getAllAccount,
 } from "../controller/accountController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
@@ -18,5 +19,6 @@ router.post("/resetPassword", validateResetTokenResetPassword);
 router.post("/changePassword", changePassword);
 router.post("/addAccount", addAccount);
 router.get("/role",protect, getAllRole)
+router.get("/",protect, getAllAccount)
 
 export default router;

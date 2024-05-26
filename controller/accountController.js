@@ -399,6 +399,39 @@ const getAllRole  = asyncHandler(async(req,res)=>{
   }
 })
 
+// @desc get all account
+// @routes get /api/account
+// @access private
+
+const getAllAccount = asyncHandler(async(req,res)=>{
+  try{
+    const account  = await sequelize.query(`
+    SELECT a.AccountID, a.username, concat(u.LastName, ' ', u.FirstName) as FullName, r.RoleName, t.TenantName
+    FROM employees as e
+    JOIN accounts as a on e.AccountID = a.AccountID
+    JOIN users as u on u.UserID = e.UserID
+    JOIN roles as r on r.RoleID = a.RoleID
+    JOIN tenants as t on t.TenantID = e.TenantID
+    `,{
+      type: QueryTypes.SELECT,
+    })
+    if(account){
+      res.status(200).json({
+        errCode: 0,
+        account
+      })
+    }else{
+      res.status(200).json({
+        errCode: -1,
+        message:"Account isnot exist"
+      })
+    }
+
+  }catch(e){
+    console.error(e)
+  }
+})
+
 
 export {
   loginAccount,
@@ -408,4 +441,5 @@ export {
   changePassword,
   addAccount,
   getAllRole,
+  getAllAccount
 };

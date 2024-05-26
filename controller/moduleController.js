@@ -9,7 +9,7 @@ import { QueryTypes, json } from "sequelize";
 const getAllModule = asyncHandler(async (req, res) => {
   try {
     const allModule = await db.Module.findAll({
-      attributes: ["ModuleName", "path", "title", "icon", "class"],
+      attributes: ["ModuleID","ModuleName", "path", "title", "icon", "class"],
     });
 
     res.status(200).json({
@@ -166,10 +166,74 @@ const getModuleAndPermission = asyncHandler(async(req,res)=>{
   }
 })
 
+// @desc create permission
+// @routes GET api/module/createPermission
+// @access private
+
+const createPermission = asyncHandler(async(req,res)=>{
+  try{
+    const {Description, 
+      AccountID, 
+      ModuleID, 
+      CanAdd, 
+      CanView, 
+      CanEdit ,
+      CanDelete, 
+      CanExport} = req.body;
+    
+    const permissions = await sequelize.query(`
+    INSERT INTO permissions (Description, AccountID, isDeleted) 
+    VALUES (:Description, :AccountID, 0);
+    `,{
+      type: QueryTypes.INSERT,
+      replacements:{
+        Description: Description,
+        AccountID: AccountID
+      }
+    })
+    const PermissionID = permissions[0];
+    console.log('per:' ,permissions[0])
+    const permissionDetail = await sequelize.query(`
+    INSERT INTO permissiondetails (PermissionID,ModuleID, 
+      CanAdd, CanView, CanEdit ,CanDelete, 
+      CanExport, isDeleted) 
+    VALUE (:PermissionID, :ModuleID, :CanAdd,:CanView,
+      :CanEdit,:CanDelete,:CanExport, 0);    
+    `,{
+      type: QueryTypes.INSERT,
+      replacements:{
+        PermissionID: PermissionID,
+        ModuleID: ModuleID,
+        CanAdd: CanAdd,
+        CanView: CanView,
+        CanEdit: CanEdit,
+        CanDelete: CanDelete,
+        CanExport: CanExport
+      }
+    })
+    if(permissions.length === 0 && permissionDetail.length ===0){
+      res.status(200).json({
+        errCode: -2,
+        message:'create permission unsuccessfully'
+      })
+    }else{
+      res.status(200).json({
+        errCode:0,
+        message:"create permission successfully",
+        permissions,
+        permissionDetail
+      })  
+    }
+  }catch(e){
+    console.error(e)
+  }
+})
+
 
 export { getAllModule, 
   getModuleName, 
   getPermissionSub, 
   getProfileAccount,
-  getModuleAndPermission
+  getModuleAndPermission,
+  createPermission
  };
