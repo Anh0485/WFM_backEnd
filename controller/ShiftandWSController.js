@@ -416,7 +416,9 @@ const getAllWSchedule = asyncHandler(async (req, res) => {
     console.log("roleid", roleid);
     if (roleid === 1) {
       const allWSchedule = await sequelize.query(
-        `SELECT w.ScheduleID, e.EmployeeID, CONCAT(u.FirstName, ' ', u.LastName) AS FullName,s.ShiftTypeID ,s.ShiftStart, s.ShiftEnd,
+        `SELECT w.ScheduleID, e.EmployeeID, 
+        CONCAT(u.FirstName, ' ', u.LastName) AS FullName,
+        u.FirstName,u.LastName, s.ShiftTypeID ,s.ShiftStart, s.ShiftEnd,
         date_format(w.workdate, '%m-%d-%Y') as workdate, w.isScheduled,c.ChannelID,c.ChannelName, CONCAT(u2.FirstName, ' ', u2.LastName) AS CreatedBy, 
             DATE_FORMAT(w.createdAt, '%d-%m-%Y') AS createdAt
             FROM workschedules AS w
@@ -439,7 +441,8 @@ const getAllWSchedule = asyncHandler(async (req, res) => {
     } else {
       const tenantName = req.TenantName;
       const allWSchedule = await sequelize.query(
-        `SELECT w.ScheduleID, e.EmployeeID, CONCAT(u.FirstName, ' ', u.LastName) AS FullName,s.ShiftTypeID ,s.ShiftStart, s.ShiftEnd,
+        `SELECT w.ScheduleID, e.EmployeeID, CONCAT(u.FirstName, ' ', u.LastName) AS FullName,u.FirstName,u.LastName,
+        s.ShiftTypeID ,s.ShiftStart, s.ShiftEnd,
         date_format(w.workdate, '%m-%d-%Y') as workdate, w.isScheduled,c.ChannelID,c.ChannelName, CONCAT(u2.FirstName, ' ', u2.LastName) AS CreatedBy, 
             DATE_FORMAT(w.createdAt, '%d-%m-%Y') AS createdAt
             FROM workschedules AS w

@@ -180,7 +180,6 @@ const createPermission = asyncHandler(async(req,res)=>{
       CanEdit ,
       CanDelete, 
       CanExport} = req.body;
-    
     const permissions = await sequelize.query(`
     INSERT INTO permissions (Description, AccountID, isDeleted) 
     VALUES (:Description, :AccountID, 0);
@@ -192,37 +191,61 @@ const createPermission = asyncHandler(async(req,res)=>{
       }
     })
     const PermissionID = permissions[0];
-    console.log('per:' ,permissions[0])
-    const permissionDetail = await sequelize.query(`
-    INSERT INTO permissiondetails (PermissionID,ModuleID, 
-      CanAdd, CanView, CanEdit ,CanDelete, 
-      CanExport, isDeleted) 
-    VALUE (:PermissionID, :ModuleID, :CanAdd,:CanView,
-      :CanEdit,:CanDelete,:CanExport, 0);    
+    //check Module
+    const checkModule = await sequelize.query(`
+    SELECT permissions.PermissionID, modules.ModuleID,
+    modules.ModuleName, permissiondetails.CanAdd, permissiondetails.CanView, permissiondetails.CanEdit, permissiondetails.CanDelete, permissiondetails.CanExport
+    FROM accounts
+    JOIN permissions ON accounts.AccountID = permissions.AccountID
+    JOIN permissiondetails ON permissiondetails.PermissionID = permissions.PermissionID
+    JOIN modules ON permissiondetails.ModuleID = modules.ModuleID
+    where accounts.AccountID = :AccountID
     `,{
-      type: QueryTypes.INSERT,
+      type: QueryTypes.SELECT,
       replacements:{
-        PermissionID: PermissionID,
-        ModuleID: ModuleID,
-        CanAdd: CanAdd,
-        CanView: CanView,
-        CanEdit: CanEdit,
-        CanDelete: CanDelete,
-        CanExport: CanExport
+        AccountID: AccountID
       }
     })
-    if(permissions.length === 0 && permissionDetail.length ===0){
+   
+    const moduleExists = checkModule.some(item => item.ModuleID === ModuleID);
+    
+    if(moduleExists){
       res.status(200).json({
-        errCode: -2,
-        message:'create permission unsuccessfully'
+        errCode: -1,
+        message:`Module is exist`
       })
     }else{
-      res.status(200).json({
-        errCode:0,
-        message:"create permission successfully",
-        permissions,
-        permissionDetail
-      })  
+      const permissionDetail = await sequelize.query(`
+      INSERT INTO permissiondetails (PermissionID, ModuleID, 
+        CanAdd, CanView, CanEdit ,CanDelete, 
+        CanExport, isDeleted) 
+      VALUE (:PermissionID, :ModuleID, :CanAdd,:CanView,
+        :CanEdit,:CanDelete,:CanExport, 0);    
+      `,{
+        type: QueryTypes.INSERT,
+        replacements:{
+          PermissionID: PermissionID,
+          ModuleID: ModuleID,
+          CanAdd: CanAdd,
+          CanView: CanView,
+          CanEdit: CanEdit,
+          CanDelete: CanDelete,
+          CanExport: CanExport
+        }
+      })
+      if(permissions.length === 0 && permissionDetail.length ===0){
+        res.status(200).json({
+          errCode: -2,
+          message:'create permission unsuccessfully'
+        })
+      }else{
+        res.status(200).json({
+          errCode:0,
+          message:"create permission successfully",
+          permissions,
+          permissionDetail
+        })  
+      }
     }
   }catch(e){
     console.error(e)
